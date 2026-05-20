@@ -133,7 +133,7 @@ class ChatController extends ChangeNotifier {
     _messages = [];
     _loadedStartIndex = 0;
     _totalMessageCount = 0;
-    _versionSelections.clear();
+    _versionSelections = <String, int>{};
     notifyListeners();
     return conversation;
   }

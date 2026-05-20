@@ -40,16 +40,16 @@ class HomeMobileScaffold extends StatelessWidget {
     required this.onNewConversation,
     required this.onOpenMiniMap,
     required this.onCreateNewConversation,
+    required this.onToggleTemporaryConversation,
     required this.onSelectModel,
+    required this.canToggleTemporaryConversation,
+    required this.temporaryConversationEnabled,
     required this.globalSearchMode,
     required this.globalSearchQuery,
     required this.onGlobalSearchQueryChanged,
     required this.onEnterGlobalSearch,
     required this.onExitGlobalSearch,
     required this.onOpenGlobalSearchResult,
-    required this.onToggleTemporaryConversation,
-    required this.canToggleTemporaryConversation,
-    required this.temporaryConversationEnabled,
     this.appBarOverride,
     required this.body,
   });
@@ -67,7 +67,10 @@ class HomeMobileScaffold extends StatelessWidget {
   final VoidCallback onNewConversation;
   final VoidCallback onOpenMiniMap;
   final Future<void> Function() onCreateNewConversation;
+  final Future<void> Function() onToggleTemporaryConversation;
   final VoidCallback onSelectModel;
+  final bool canToggleTemporaryConversation;
+  final bool temporaryConversationEnabled;
   final bool globalSearchMode;
   final String globalSearchQuery;
   final ValueChanged<String> onGlobalSearchQueryChanged;
@@ -75,9 +78,6 @@ class HomeMobileScaffold extends StatelessWidget {
   final VoidCallback onExitGlobalSearch;
   final Future<void> Function(String conversationId, String messageId)
   onOpenGlobalSearchResult;
-  final Future<void> Function() onToggleTemporaryConversation;
-  final bool canToggleTemporaryConversation;
-  final bool temporaryConversationEnabled;
   final PreferredSizeWidget? appBarOverride;
   final Widget body;
 

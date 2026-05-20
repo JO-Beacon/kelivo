@@ -68,6 +68,48 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
+class _TemporaryConversationEmptyState extends StatelessWidget {
+  const _TemporaryConversationEmptyState({required this.bottomContentPadding});
+
+  final double bottomContentPadding;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final cs = Theme.of(context).colorScheme;
+
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(32, 24, 32, bottomContentPadding + 24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Lucide.HatGlasses,
+                size: 72,
+                color: cs.onSurface.withValues(alpha: 0.42),
+              ),
+              const SizedBox(height: 18),
+              Text(
+                l10n.temporaryChatEmptyMessage,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 15,
+                  height: 1.45,
+                  color: cs.onSurface.withValues(alpha: 0.68),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 String _compressContextErrorMessage(AppLocalizations l10n, String error) {
   return switch (error) {
     'no_messages' => l10n.compressContextNoMessages,
@@ -270,48 +312,6 @@ class _CompressModeSegmented extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _TemporaryConversationEmptyState extends StatelessWidget {
-  const _TemporaryConversationEmptyState({required this.bottomContentPadding});
-
-  final double bottomContentPadding;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final cs = Theme.of(context).colorScheme;
-
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(32, 24, 32, bottomContentPadding + 24),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 420),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Lucide.HatGlasses,
-                size: 72,
-                color: cs.onSurface.withValues(alpha: 0.42),
-              ),
-              const SizedBox(height: 18),
-              Text(
-                l10n.temporaryChatEmptyMessage,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 15,
-                  height: 1.45,
-                  color: cs.onSurface.withValues(alpha: 0.68),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }
@@ -627,23 +627,7 @@ class _HomePageState extends State<HomePage>
       onNewConversation: () async {
         await _controller.createNewConversationAnimated();
       },
-      onOpenMiniMap: () async {
-        final collapsed = _controller.collapseVersions(_controller.messages);
-        String? selectedId;
-        if (PlatformUtils.isDesktop) {
-          selectedId = await showDesktopMiniMapPopover(
-            context,
-            anchorKey: _inputBarKey,
-            messages: collapsed,
-          );
-        } else {
-          selectedId = await showMiniMapSheet(context, collapsed);
-        }
-        if (!mounted) return;
-        if (selectedId != null && selectedId.isNotEmpty) {
-          await _controller.scrollToMessageId(selectedId);
-        }
-      },
+      onOpenMiniMap: _openMiniMap,
       onCreateNewConversation: () async {
         await _controller.createNewConversationAnimated();
         if (mounted) {
@@ -830,7 +814,7 @@ class _HomePageState extends State<HomePage>
   }
 
   Future<void> _openSelectionMiniMap() async {
-    final collapsed = _controller.collapseVersions(_controller.messages);
+    final collapsed = _controller.allCollapsedMessagesForCurrentConversation();
     if (collapsed.isEmpty) return;
 
     if (PlatformUtils.isDesktop &&
@@ -1050,7 +1034,7 @@ class _HomePageState extends State<HomePage>
 
   /// Map persisted truncateIndex (raw message count) to collapsed index.
   int _computeTruncCollapsedIndex() {
-    final int truncRaw = _controller.currentConversation?.truncateIndex ?? -1;
+    final int truncRaw = _controller.chatController.loadedWindowTruncateIndex();
     if (truncRaw <= 0) return -1;
     final rawMessages = _controller.messages;
     final seen = <String>{};
@@ -1091,10 +1075,6 @@ class _HomePageState extends State<HomePage>
         byGroup: _controller.chatController.groupedMessages,
         versionSelections: _controller.versionSelections,
         truncCollapsedIndex: _computeTruncCollapsedIndex(),
-        hasMoreBefore: _controller.chatController.hasMoreBefore,
-        onLoadMoreBefore: _controller.loadMoreBefore,
-        hasMoreAfter: _controller.chatController.hasMoreAfter,
-        onLoadMoreAfter: _controller.loadMoreAfter,
         reasoning: _controller.reasoning,
         reasoningSegments: _controller.reasoningSegments,
         contentSplits: _controller.contentSplits,
@@ -1111,6 +1091,10 @@ class _HomePageState extends State<HomePage>
         streamingContentNotifier: _controller.streamingContentNotifier,
         spotlightMessageId: _controller.spotlightMessageId,
         spotlightToken: _controller.spotlightToken,
+        hasMoreBefore: _controller.chatController.hasMoreBefore,
+        onLoadMoreBefore: _controller.loadMoreBefore,
+        hasMoreAfter: _controller.chatController.hasMoreAfter,
+        onLoadMoreAfter: _controller.loadMoreAfter,
         onVersionChange: (groupId, version) async {
           await _controller.setSelectedVersion(groupId, version);
         },
@@ -1230,22 +1214,7 @@ class _HomePageState extends State<HomePage>
         final sp = context.read<SettingsProvider>();
         await sp.setOcrEnabled(!sp.ocrEnabled);
       },
-      onOpenMiniMap: () async {
-        final collapsed = _controller.collapseVersions(_controller.messages);
-        String? selectedId;
-        if (PlatformUtils.isDesktop) {
-          selectedId = await showDesktopMiniMapPopover(
-            context,
-            anchorKey: _inputBarKey,
-            messages: collapsed,
-          );
-        } else {
-          selectedId = await showMiniMapSheet(context, collapsed);
-        }
-        if (selectedId != null && selectedId.isNotEmpty) {
-          await _controller.scrollToMessageId(selectedId);
-        }
-      },
+      onOpenMiniMap: _openMiniMap,
       onPickCamera: _controller.onPickCamera,
       onPickPhotos: _controller.onPickPhotos,
       onUploadFiles: _controller.onPickFiles,
@@ -1309,6 +1278,26 @@ class _HomePageState extends State<HomePage>
         );
       },
     );
+  }
+
+  Future<void> _openMiniMap() async {
+    final collapsed = _controller.allCollapsedMessagesForCurrentConversation();
+    if (collapsed.isEmpty) return;
+
+    String? selectedId;
+    if (PlatformUtils.isDesktop) {
+      selectedId = await showDesktopMiniMapPopover(
+        context,
+        anchorKey: _inputBarKey,
+        messages: collapsed,
+      );
+    } else {
+      selectedId = await showMiniMapSheet(context, collapsed);
+    }
+    if (!mounted) return;
+    if (selectedId != null && selectedId.isNotEmpty) {
+      await _controller.scrollToMessageId(selectedId);
+    }
   }
 
   Widget _wrapWithDropTarget(Widget child) {

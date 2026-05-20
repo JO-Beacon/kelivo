@@ -8,16 +8,15 @@ import '../../../utils/sandbox_path_resolver.dart';
 import '../../../utils/app_directories.dart';
 
 class ChatService extends ChangeNotifier {
-  static const int defaultInitialMessageMin = 20;
-  static const int defaultInitialMessageMax = 240;
-  static const int defaultInitialTextBudget = 20000;
-  static const int defaultHistoryPageSize = 20;
-  static const int defaultLoadedWindowMax = 360;
-
   static const String _conversationsBoxName = 'conversations';
   static const String _messagesBoxName = 'messages';
   static const String _toolEventsBoxName = 'tool_events_v1';
   static const String _activeStreamingKey = '_active_streaming_ids';
+  static const int defaultInitialMessageMin = 2;
+  static const int defaultInitialMessageMax = 240;
+  static const int defaultInitialTextBudget = 20000;
+  static const int defaultHistoryPageSize = 20;
+  static const int defaultLoadedWindowMax = 360;
 
   late Box<Conversation> _conversationsBox;
   late Box<ChatMessage> _messagesBox;
@@ -808,7 +807,11 @@ class ChatService extends ChangeNotifier {
           id: conversationId,
           title: _defaultConversationTitle,
         );
-        await _conversationsBox.put(conversationId, conversation);
+        if (!temporary) {
+          await _conversationsBox.put(conversationId, conversation);
+        } else {
+          _draftConversations[conversationId] = conversation;
+        }
       }
     }
 
@@ -851,6 +854,29 @@ class ChatService extends ChangeNotifier {
 
     notifyListeners();
     return message;
+  }
+
+  ChatMessage? _cachedTemporaryMessage(String messageId) {
+    for (final entry in _messagesCache.entries) {
+      if (!_temporaryConversationIds.contains(entry.key)) continue;
+      for (final message in entry.value) {
+        if (message.id == messageId) return message;
+      }
+    }
+    return null;
+  }
+
+  bool _isTemporaryMessageId(String messageId) {
+    return _cachedTemporaryMessage(messageId) != null;
+  }
+
+  void _replaceCachedMessage(ChatMessage updatedMessage) {
+    final messages = _messagesCache[updatedMessage.conversationId];
+    if (messages == null) return;
+    final index = messages.indexWhere((m) => m.id == updatedMessage.id);
+    if (index >= 0) {
+      messages[index] = updatedMessage;
+    }
   }
 
   Future<void> updateMessage(
@@ -984,38 +1010,11 @@ class ChatService extends ChangeNotifier {
     // NOTE: Do NOT call notifyListeners() here to avoid UI rebuilds during streaming
   }
 
-  ChatMessage? _cachedTemporaryMessage(String messageId) {
-    for (final entry in _messagesCache.entries) {
-      if (!_temporaryConversationIds.contains(entry.key)) continue;
-      for (final message in entry.value) {
-        if (message.id == messageId) return message;
-      }
-    }
-    return null;
-  }
-
-  bool _isTemporaryMessageId(String messageId) {
-    return _cachedTemporaryMessage(messageId) != null;
-  }
-
-  void _replaceCachedMessage(ChatMessage updatedMessage) {
-    final messages = _messagesCache[updatedMessage.conversationId];
-    if (messages == null) return;
-    final index = messages.indexWhere((m) => m.id == updatedMessage.id);
-    if (index >= 0) {
-      messages[index] = updatedMessage;
-    }
-  }
-
   // Tool events persistence (per assistant message)
   List<Map<String, dynamic>> getToolEvents(String assistantMessageId) {
     if (!_initialized) return const <Map<String, dynamic>>[];
-    if (_isTemporaryMessageId(assistantMessageId)) {
-      return List<Map<String, dynamic>>.from(
-        _temporaryToolEvents[assistantMessageId] ??
-            const <Map<String, dynamic>>[],
-      );
-    }
+    final temporary = _temporaryToolEvents[assistantMessageId];
+    if (temporary != null) return List<Map<String, dynamic>>.of(temporary);
     final v = _toolEventsBox.get(assistantMessageId);
     if (v is List) {
       return v
@@ -1032,8 +1031,9 @@ class ChatService extends ChangeNotifier {
   ) async {
     if (!_initialized) await init();
     if (_isTemporaryMessageId(assistantMessageId)) {
-      _temporaryToolEvents[assistantMessageId] =
-          List<Map<String, dynamic>>.from(events);
+      _temporaryToolEvents[assistantMessageId] = List<Map<String, dynamic>>.of(
+        events,
+      );
       notifyListeners();
       return;
     }
@@ -1087,6 +1087,11 @@ class ChatService extends ChangeNotifier {
     } else {
       list.add(record);
     }
+    if (_isTemporaryMessageId(assistantMessageId)) {
+      _temporaryToolEvents[assistantMessageId] = list;
+      notifyListeners();
+      return;
+    }
     await _toolEventsBox.put(assistantMessageId, list);
     notifyListeners();
   }
@@ -1094,10 +1099,8 @@ class ChatService extends ChangeNotifier {
   // Gemini thought signature persistence (per assistant message)
   String? getGeminiThoughtSignature(String assistantMessageId) {
     if (!_initialized) return null;
-    if (_isTemporaryMessageId(assistantMessageId)) {
-      final v = _temporaryGeminiThoughtSigs[assistantMessageId];
-      return (v != null && v.trim().isNotEmpty) ? v : null;
-    }
+    final temporary = _temporaryGeminiThoughtSigs[assistantMessageId];
+    if (temporary != null && temporary.trim().isNotEmpty) return temporary;
     final v = _toolEventsBox.get(_sigKey(assistantMessageId));
     if (v is String && v.trim().isNotEmpty) return v;
     return null;

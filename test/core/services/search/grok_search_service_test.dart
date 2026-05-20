@@ -100,6 +100,7 @@ void main() {
           {'type': 'x_search'},
         ],
         'store': false,
+        'stream': false,
       });
       expect(result.answer, 'Kelivo is a Flutter chat client.');
       expect(result.items, hasLength(1));

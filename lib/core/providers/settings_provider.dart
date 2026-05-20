@@ -4283,6 +4283,7 @@ class ProviderConfig {
           balanceEnabled: false,
           balanceApiPath: '/credits',
           balanceResultPath: 'data.total_usage',
+          claudePromptCachingEnabled: false,
         );
       case ProviderKind.claude:
         return ProviderConfig(
@@ -4358,6 +4359,7 @@ class ProviderConfig {
             balanceEnabled: _defaultBalanceEnabled(key),
             balanceApiPath: _defaultBalanceApiPath(key),
             balanceResultPath: _defaultBalanceResultPath(key),
+            claudePromptCachingEnabled: false,
           );
         }
         // Special-case SiliconFlow: prefill two partnered models
@@ -4398,6 +4400,7 @@ class ProviderConfig {
             balanceEnabled: _defaultBalanceEnabled(key),
             balanceApiPath: _defaultBalanceApiPath(key),
             balanceResultPath: _defaultBalanceResultPath(key),
+            claudePromptCachingEnabled: false,
           );
         }
         return ProviderConfig(
@@ -4423,6 +4426,7 @@ class ProviderConfig {
           balanceEnabled: _defaultBalanceEnabled(key),
           balanceApiPath: _defaultBalanceApiPath(key),
           balanceResultPath: _defaultBalanceResultPath(key),
+          claudePromptCachingEnabled: false,
         );
     }
   }

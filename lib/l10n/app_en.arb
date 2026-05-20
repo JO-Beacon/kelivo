@@ -508,8 +508,10 @@
   "codeBlockDefaultFileNameStem": "code",
   "markdownTableLabel": "Table",
   "markdownTableExportCsvTooltip": "Export CSV",
+  "markdownTableSaveImageTooltip": "Save to Gallery",
   "markdownTableDefaultFileNameStem": "table",
   "markdownTableCopiedCsvSnackbar": "CSV copied. Long press Copy to copy as image.",
+  "markdownTableCopiedMarkdownSnackbar": "Table copied.",
   "codeBlockCollapsedLines": "… {n} lines folded",
   "@codeBlockCollapsedLines": {
     "placeholders": {
@@ -1731,7 +1733,7 @@
   "searchServicesDialogPageInvalid": "Page must be a positive integer.",
   "generationInterrupted": "Generation interrupted",
   "titleForLocale": "New Chat",
-  "temporaryChatTitle": "Temporary Chat",
+    "temporaryChatTitle": "Temporary Chat",
   "temporaryChatEmptyMessage": "Temporary chats do not appear in history and will be deleted completely after you leave.",
   "temporaryChatToggleTooltip": "Toggle temporary chat",
   "quickPhraseBackTooltip": "Back",

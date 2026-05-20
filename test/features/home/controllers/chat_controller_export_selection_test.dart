@@ -102,7 +102,7 @@ void main() {
         controller.setCurrentConversation(_conversation(storedMessages));
 
         expect(controller.totalMessageCount, 60);
-        expect(controller.messages.first.id, 'message-40');
+        expect(controller.messages.first.id, 'message-58');
         expect(controller.messages.last.id, 'message-59');
         expect(controller.hasMoreBefore, isTrue);
         expect(controller.hasMoreAfter, isFalse);
@@ -110,9 +110,9 @@ void main() {
         final loaded = controller.loadMoreBefore(limit: 10);
 
         expect(loaded, isTrue);
-        expect(controller.messages.first.id, 'message-30');
+        expect(controller.messages.first.id, 'message-48');
         expect(controller.messages.last.id, 'message-59');
-        expect(controller.loadedStartIndex, 30);
+        expect(controller.loadedStartIndex, 48);
       },
     );
 
@@ -143,7 +143,7 @@ void main() {
 
       controller.setCurrentConversation(conversation);
 
-      expect(controller.messages.length, 20);
+      expect(controller.messages.length, 2);
       expect(
         controller.messagesForCompleteHistoryContext(conversation),
         hasLength(70),

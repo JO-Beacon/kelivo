@@ -107,14 +107,18 @@ class _IosTileButtonState extends State<IosTileButton> {
                 ),
               ),
               const SizedBox(width: 8),
-              Text(
-                widget.label,
-                style: TextStyle(
-                  fontSize: widget.fontSize,
-                  fontWeight: FontWeight.w600,
-                  color: widget.enabled
-                      ? textColor
-                      : textColor.withValues(alpha: 0.45),
+              Flexible(
+                child: Text(
+                  widget.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: widget.fontSize,
+                    fontWeight: FontWeight.w600,
+                    color: widget.enabled
+                        ? textColor
+                        : textColor.withValues(alpha: 0.45),
+                  ),
                 ),
               ),
             ],

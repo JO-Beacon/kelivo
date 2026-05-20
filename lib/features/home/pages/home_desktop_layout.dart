@@ -48,14 +48,14 @@ class HomeDesktopScaffold extends StatelessWidget {
     required this.onSelectConversation,
     required this.onNewConversation,
     required this.onCreateNewConversation,
+    required this.onToggleTemporaryConversation,
     required this.onSelectModel,
+    required this.canToggleTemporaryConversation,
+    required this.temporaryConversationEnabled,
     required this.globalSearchMode,
     required this.globalSearchQuery,
     required this.onGlobalSearchQueryChanged,
     required this.onOpenGlobalSearchResult,
-    required this.onToggleTemporaryConversation,
-    required this.canToggleTemporaryConversation,
-    required this.temporaryConversationEnabled,
     required this.onSidebarWidthChanged,
     required this.onSidebarWidthChangeEnd,
     required this.onRightSidebarWidthChanged,
@@ -86,15 +86,15 @@ class HomeDesktopScaffold extends StatelessWidget {
   final void Function(String id) onSelectConversation;
   final VoidCallback onNewConversation;
   final Future<void> Function() onCreateNewConversation;
+  final Future<void> Function() onToggleTemporaryConversation;
   final VoidCallback onSelectModel;
+  final bool canToggleTemporaryConversation;
+  final bool temporaryConversationEnabled;
   final bool globalSearchMode;
   final String globalSearchQuery;
   final ValueChanged<String> onGlobalSearchQueryChanged;
   final Future<void> Function(String conversationId, String messageId)
   onOpenGlobalSearchResult;
-  final Future<void> Function() onToggleTemporaryConversation;
-  final bool canToggleTemporaryConversation;
-  final bool temporaryConversationEnabled;
   final void Function(double dx) onSidebarWidthChanged;
   final VoidCallback onSidebarWidthChangeEnd;
   final void Function(double dx) onRightSidebarWidthChanged;
@@ -563,8 +563,8 @@ class HomeDesktopScaffold extends StatelessWidget {
         builder: canToggleTemporaryConversation && temporaryConversationEnabled
             ? (color) => SvgPicture.asset(
                 'assets/icons/temporary_chat_checked.svg',
-                width: 22,
-                height: 22,
+                width: 20,
+                height: 20,
                 colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
               )
             : null,

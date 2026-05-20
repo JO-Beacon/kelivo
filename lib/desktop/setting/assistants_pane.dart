@@ -600,10 +600,10 @@ class _DesktopAssistantCardState extends State<_DesktopAssistantCard> {
                             onCopy: () async {
                               final assistantProvider = context
                                   .read<AssistantProvider>();
+                              final l10n = AppLocalizations.of(context)!;
                               final insertAtTop = context
                                   .read<SettingsProvider>()
                                   .insertNewAssistantAtTop;
-                              final l10n = AppLocalizations.of(context)!;
                               final newId = await assistantProvider
                                   .duplicateAssistant(
                                     widget.item.id,

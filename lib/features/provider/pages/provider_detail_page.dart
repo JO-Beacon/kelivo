@@ -1849,10 +1849,15 @@ class _ProviderDetailPageState extends State<ProviderDetailPage> {
     return keyLower.contains('aihubmix') || baseLower.contains('aihubmix.com');
   }
 
+  bool get _isOpenRouter {
+    final keyLower = widget.keyName.toLowerCase();
+    final baseLower = _baseCtrl.text.toLowerCase();
+    return keyLower.contains('openrouter') || baseLower.contains('openrouter');
+  }
+
   bool get _supportsClaudePromptCaching {
     return _kind == ProviderKind.claude ||
-        widget.keyName.toLowerCase().contains('openrouter') ||
-        _baseCtrl.text.toLowerCase().contains('openrouter.ai');
+        (_kind == ProviderKind.openai && _isOpenRouter);
   }
 
   Widget _providerKindRow(BuildContext context) {
