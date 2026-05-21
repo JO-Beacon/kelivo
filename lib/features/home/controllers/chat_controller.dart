@@ -453,12 +453,14 @@ class ChatController extends ChangeNotifier {
   /// Update a message by ID with optional new values.
   Future<void> updateMessage(
     String messageId, {
+    String? role,
     String? content,
     int? totalTokens,
     bool? isStreaming,
   }) async {
     await _chatService.updateMessage(
       messageId,
+      role: role,
       content: content,
       totalTokens: totalTokens,
       isStreaming: isStreaming,
@@ -468,6 +470,7 @@ class ChatController extends ChangeNotifier {
     final index = _messages.indexWhere((m) => m.id == messageId);
     if (index != -1) {
       _messages[index] = _messages[index].copyWith(
+        role: role ?? _messages[index].role,
         content: content ?? _messages[index].content,
         totalTokens: totalTokens ?? _messages[index].totalTokens,
         isStreaming: isStreaming ?? _messages[index].isStreaming,
@@ -618,16 +621,45 @@ class ChatController extends ChangeNotifier {
   List<ChatMessage> collapseVersions(List<ChatMessage> items) {
     final Map<String, List<ChatMessage>> byGroup =
         <String, List<ChatMessage>>{};
+    final Map<String, int> firstLocalIndexByGroup = <String, int>{};
     final List<String> order = <String>[];
 
-    for (final m in items) {
+    for (var i = 0; i < items.length; i++) {
+      final m = items[i];
       final gid = (m.groupId ?? m.id);
       final list = byGroup.putIfAbsent(gid, () {
         order.add(gid);
+        firstLocalIndexByGroup[gid] = i;
         return <ChatMessage>[];
       });
       list.add(m);
     }
+
+    final currentConversationId = _currentConversation?.id;
+    final isLoadedWindow = identical(items, _messages);
+    final loadedEndIndex = _loadedStartIndex + _messages.length;
+
+    final orderedGroups = <_MessageGroupOrder>[];
+    for (final gid in order) {
+      final persistedIndex = currentConversationId == null
+          ? -1
+          : _chatService.getMessageIndex(currentConversationId, gid);
+      if (isLoadedWindow &&
+          persistedIndex >= 0 &&
+          (persistedIndex < _loadedStartIndex ||
+              persistedIndex >= loadedEndIndex)) {
+        continue;
+      }
+      orderedGroups.add(
+        _MessageGroupOrder(
+          groupId: gid,
+          orderIndex: persistedIndex >= 0
+              ? persistedIndex
+              : _loadedStartIndex + (firstLocalIndexByGroup[gid] ?? 0),
+        ),
+      );
+    }
+    orderedGroups.sort((a, b) => a.orderIndex.compareTo(b.orderIndex));
 
     // Sort each group by version
     for (final e in byGroup.entries) {
@@ -636,9 +668,9 @@ class ChatController extends ChangeNotifier {
 
     // Select the appropriate version from each group
     final out = <ChatMessage>[];
-    for (final gid in order) {
-      final vers = byGroup[gid]!;
-      final sel = _versionSelections[gid];
+    for (final group in orderedGroups) {
+      final vers = byGroup[group.groupId]!;
+      final sel = _versionSelections[group.groupId];
       final idx = (sel != null && sel >= 0 && sel < vers.length)
           ? sel
           : (vers.length - 1);
@@ -646,6 +678,12 @@ class ChatController extends ChangeNotifier {
     }
 
     return out;
+  }
+
+  static int compareVersionedMessagesForDisplay(ChatMessage a, ChatMessage b) {
+    final groupCompare = (a.groupId ?? a.id).compareTo(b.groupId ?? b.id);
+    if (groupCompare != 0) return groupCompare;
+    return a.version.compareTo(b.version);
   }
 
   /// Get messages collapsed by version (cached).
@@ -727,4 +765,11 @@ class ChatController extends ChangeNotifier {
     cancelAllStreams();
     super.dispose();
   }
+}
+
+class _MessageGroupOrder {
+  const _MessageGroupOrder({required this.groupId, required this.orderIndex});
+
+  final String groupId;
+  final int orderIndex;
 }

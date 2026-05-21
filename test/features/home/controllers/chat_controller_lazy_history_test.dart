@@ -54,12 +54,57 @@ class _FakeLazyChatService extends ChatService {
   }
 
   @override
-  Map<String, int> getVersionSelections(String conversationId) =>
-      const <String, int>{};
+  Map<String, int> getVersionSelections(String conversationId) {
+    if (_messages.any((message) => message.id == 'message-10-edit')) {
+      return const <String, int>{'message-10': 1};
+    }
+    return const <String, int>{};
+  }
 
   ChatMessage appendPersistedMessage(ChatMessage message) {
     _messages.add(message);
     return message;
+  }
+
+  @override
+  Future<void> updateMessage(
+    String messageId, {
+    String? role,
+    String? content,
+    int? totalTokens,
+    bool? isStreaming,
+    String? reasoningText,
+    DateTime? reasoningStartAt,
+    DateTime? reasoningFinishedAt,
+    String? translation,
+    String? reasoningSegmentsJson,
+    int? promptTokens,
+    int? completionTokens,
+    int? cachedTokens,
+    int? durationMs,
+  }) async {
+    final index = _messages.indexWhere((message) => message.id == messageId);
+    if (index == -1) {
+      throw StateError('message not found: $messageId');
+    }
+
+    final message = _messages[index];
+    _messages[index] = message.copyWith(
+      role: role ?? message.role,
+      content: content ?? message.content,
+      totalTokens: totalTokens ?? message.totalTokens,
+      isStreaming: isStreaming ?? message.isStreaming,
+      reasoningText: reasoningText ?? message.reasoningText,
+      reasoningStartAt: reasoningStartAt ?? message.reasoningStartAt,
+      reasoningFinishedAt: reasoningFinishedAt ?? message.reasoningFinishedAt,
+      translation: translation,
+      reasoningSegmentsJson:
+          reasoningSegmentsJson ?? message.reasoningSegmentsJson,
+      promptTokens: promptTokens ?? message.promptTokens,
+      completionTokens: completionTokens ?? message.completionTokens,
+      cachedTokens: cachedTokens ?? message.cachedTokens,
+      durationMs: durationMs ?? message.durationMs,
+    );
   }
 
   @override
@@ -78,6 +123,22 @@ ChatMessage _message(int index) {
     role: index.isEven ? 'user' : 'assistant',
     content: 'message $index',
     conversationId: 'conversation-1',
+  );
+}
+
+ChatMessage _versionedMessage({
+  required String id,
+  required String groupId,
+  required int version,
+  required String content,
+}) {
+  return ChatMessage(
+    id: id,
+    role: 'user',
+    content: content,
+    conversationId: 'conversation-1',
+    groupId: groupId,
+    version: version,
   );
 }
 
@@ -113,6 +174,20 @@ void main() {
       expect(controller.totalMessageCount, 100);
       expect(controller.hasMoreBefore, isTrue);
     });
+
+    test(
+      'updating message role persists through service and syncs loaded list',
+      () async {
+        controller.setCurrentConversation(conversation);
+        final message = controller.messages.first;
+
+        await controller.updateMessage(message.id, role: 'assistant');
+
+        expect(messages[80].role, 'assistant');
+        expect(controller.messages.first.role, 'assistant');
+        expect(controller.messages.first.content, message.content);
+      },
+    );
 
     test('opening a 5000-message conversation keeps only the tail window', () {
       messages = List<ChatMessage>.generate(5000, _message);
@@ -302,6 +377,75 @@ void main() {
       expect(controller.totalMessageCount, 5001);
       expect(controller.hasMoreAfter, isFalse);
     });
+
+    test(
+      'tail window does not render a stale edited version without its group anchor',
+      () {
+        messages = List<ChatMessage>.generate(100, _message);
+        messages.add(
+          _versionedMessage(
+            id: 'message-10-edit',
+            groupId: 'message-10',
+            version: 1,
+            content: 'edited message 10',
+          ),
+        );
+        conversation = Conversation(
+          id: 'conversation-1',
+          title: 'Long chat with versions',
+          messageIds: messages.map((message) => message.id).toList(),
+          versionSelections: const {'message-10': 1},
+        );
+        chatService = _FakeLazyChatService(messages);
+        controller.dispose();
+        controller = ChatController(chatService: chatService);
+
+        controller.setCurrentConversation(conversation);
+
+        final collapsed = controller.collapsedMessages;
+        expect(
+          collapsed.any((message) => message.id == 'message-10-edit'),
+          isFalse,
+        );
+        expect(collapsed.first.id, 'message-81');
+        expect(collapsed.last.id, 'message-99');
+        expect(controller.messages.last.id, 'message-10-edit');
+      },
+    );
+
+    test(
+      'complete collapsed history keeps selected edited version at original group position',
+      () {
+        messages = List<ChatMessage>.generate(100, _message);
+        messages.add(
+          _versionedMessage(
+            id: 'message-10-edit',
+            groupId: 'message-10',
+            version: 1,
+            content: 'edited message 10',
+          ),
+        );
+        conversation = Conversation(
+          id: 'conversation-1',
+          title: 'Long chat with versions',
+          messageIds: messages.map((message) => message.id).toList(),
+          versionSelections: const {'message-10': 1},
+        );
+        chatService = _FakeLazyChatService(messages);
+        controller.dispose();
+        controller = ChatController(chatService: chatService);
+        controller.setCurrentConversation(conversation);
+
+        final collapsed = controller
+            .allCollapsedMessagesForCurrentConversation();
+
+        expect(collapsed.length, 100);
+        expect(collapsed[9].id, 'message-9');
+        expect(collapsed[10].id, 'message-10-edit');
+        expect(collapsed[11].id, 'message-11');
+        expect(collapsed.last.id, 'message-99');
+      },
+    );
 
     test(
       'mini map source includes all messages without expanding chat window',

@@ -881,6 +881,7 @@ class ChatService extends ChangeNotifier {
 
   Future<void> updateMessage(
     String messageId, {
+    String? role,
     String? content,
     int? totalTokens,
     bool? isStreaming,
@@ -901,6 +902,7 @@ class ChatService extends ChangeNotifier {
     if (message == null) return;
 
     final updatedMessage = message.copyWith(
+      role: role ?? message.role,
       content: content ?? message.content,
       totalTokens: totalTokens ?? message.totalTokens,
       isStreaming: isStreaming ?? message.isStreaming,
@@ -947,6 +949,7 @@ class ChatService extends ChangeNotifier {
   /// widgets watching ChatService (e.g., side_drawer).
   Future<void> updateMessageSilent(
     String messageId, {
+    String? role,
     String? content,
     int? totalTokens,
     bool? isStreaming,
@@ -967,6 +970,7 @@ class ChatService extends ChangeNotifier {
     if (message == null) return;
 
     final updatedMessage = message.copyWith(
+      role: role ?? message.role,
       content: content ?? message.content,
       totalTokens: totalTokens ?? message.totalTokens,
       isStreaming: isStreaming ?? message.isStreaming,

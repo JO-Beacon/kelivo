@@ -1776,6 +1776,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get messageMoreSheetDeleteAllVersions => '删除全部版本';
 
   @override
+  String get messageMoreSheetSwitchToUser => '切换为用户';
+
+  @override
+  String get messageMoreSheetSwitchToAssistant => '切换为模型';
+
+  @override
   String get reasoningBudgetSheetOff => '关闭';
 
   @override
@@ -3584,6 +3590,9 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get displaySettingsPageKeepAssistantListExpandedOnSidebarCloseTitle =>
       '关闭侧边栏时不折叠助手列表';
+
+  @override
+  String get displaySettingsPageInsertNewAssistantAtTopTitle => '新建和复制助手放到顶部';
 
   @override
   String get displaySettingsPageShowUpdatesTitle => '显示更新';
@@ -6712,6 +6721,12 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String get messageMoreSheetDeleteAllVersions => '删除全部版本';
 
   @override
+  String get messageMoreSheetSwitchToUser => '切换为用户';
+
+  @override
+  String get messageMoreSheetSwitchToAssistant => '切换为模型';
+
+  @override
   String get reasoningBudgetSheetOff => '关闭';
 
   @override
@@ -8520,6 +8535,9 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   @override
   String get displaySettingsPageKeepAssistantListExpandedOnSidebarCloseTitle =>
       '关闭侧边栏时不折叠助手列表';
+
+  @override
+  String get displaySettingsPageInsertNewAssistantAtTopTitle => '新建和复制助手放到顶部';
 
   @override
   String get displaySettingsPageShowUpdatesTitle => '显示更新';
@@ -11647,6 +11665,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get messageMoreSheetDeleteAllVersions => '刪除全部版本';
 
   @override
+  String get messageMoreSheetSwitchToUser => '切換為使用者';
+
+  @override
+  String get messageMoreSheetSwitchToAssistant => '切換為模型';
+
+  @override
   String get reasoningBudgetSheetOff => '關閉';
 
   @override
@@ -13454,6 +13478,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get displaySettingsPageKeepAssistantListExpandedOnSidebarCloseTitle =>
       '關閉側邊欄時不折疊助手列表';
+
+  @override
+  String get displaySettingsPageInsertNewAssistantAtTopTitle => '新建和複製助手放到頂部';
 
   @override
   String get displaySettingsPageShowUpdatesTitle => '顯示更新';

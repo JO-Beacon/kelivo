@@ -40,6 +40,8 @@ typedef OnForkConversation = Future<void> Function(ChatMessage message);
 typedef OnShareMessage =
     void Function(int messageIndex, List<ChatMessage> messages);
 typedef OnSpeakMessage = Future<void> Function(ChatMessage message);
+typedef OnSwitchMessageRole =
+    Future<void> Function(ChatMessage message, String role);
 typedef OnSuggestionTap = void Function(String suggestion);
 typedef OnRecoveredAskUserAnswer =
     Future<void> Function(
@@ -114,6 +116,7 @@ class MessageListView extends StatefulWidget {
     this.onForkConversation,
     this.onShareMessage,
     this.onSpeakMessage,
+    this.onSwitchMessageRole,
     this.suggestions = const <String>[],
     this.onSuggestionTap,
     this.onRecoveredAskUserAnswer,
@@ -179,6 +182,7 @@ class MessageListView extends StatefulWidget {
   final OnForkConversation? onForkConversation;
   final OnShareMessage? onShareMessage;
   final OnSpeakMessage? onSpeakMessage;
+  final OnSwitchMessageRole? onSwitchMessageRole;
   final List<String> suggestions;
   final OnSuggestionTap? onSuggestionTap;
   final OnRecoveredAskUserAnswer? onRecoveredAskUserAnswer;
@@ -822,6 +826,10 @@ class _MessageListViewState extends State<MessageListView> {
           await widget.onForkConversation?.call(message);
         } else if (action == MessageMoreAction.share) {
           widget.onShareMessage?.call(index, widget.messages);
+        } else if (action == MessageMoreAction.switchToUser) {
+          await widget.onSwitchMessageRole?.call(message, 'user');
+        } else if (action == MessageMoreAction.switchToAssistant) {
+          await widget.onSwitchMessageRole?.call(message, 'assistant');
         }
       },
       toolParts: message.role == 'assistant'

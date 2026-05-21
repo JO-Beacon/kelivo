@@ -1824,6 +1824,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get messageMoreSheetDeleteAllVersions => 'Delete All Versions';
 
   @override
+  String get messageMoreSheetSwitchToUser => 'Switch to User';
+
+  @override
+  String get messageMoreSheetSwitchToAssistant => 'Switch to Model';
+
+  @override
   String get reasoningBudgetSheetOff => 'Off';
 
   @override
@@ -3718,6 +3724,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get displaySettingsPageKeepAssistantListExpandedOnSidebarCloseTitle =>
       'Don\'t collapse assistant list when closing sidebar';
+
+  @override
+  String get displaySettingsPageInsertNewAssistantAtTopTitle =>
+      'Place new and copied assistants at top';
 
   @override
   String get displaySettingsPageShowUpdatesTitle => 'Show Updates';

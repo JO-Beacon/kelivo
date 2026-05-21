@@ -116,6 +116,8 @@ class _DisplaySettingsBody extends StatelessWidget {
                   _RowDivider(),
                   _ToggleRowShowUpdates(),
                   _RowDivider(),
+                  _ToggleRowInsertNewAssistantAtTop(),
+                  _RowDivider(),
                   _ToggleRowShowChatListDate(),
                   _RowDivider(),
                   _ToggleRowNewChatOnAssistantSwitch(),
@@ -2394,6 +2396,21 @@ class _ToggleRowShowUpdates extends StatelessWidget {
       label: l10n.displaySettingsPageShowUpdatesTitle,
       value: sp.showAppUpdates,
       onChanged: (v) => context.read<SettingsProvider>().setShowAppUpdates(v),
+    );
+  }
+}
+
+class _ToggleRowInsertNewAssistantAtTop extends StatelessWidget {
+  const _ToggleRowInsertNewAssistantAtTop();
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final sp = context.watch<SettingsProvider>();
+    return _ToggleRow(
+      label: l10n.displaySettingsPageInsertNewAssistantAtTopTitle,
+      value: sp.insertNewAssistantAtTop,
+      onChanged: (v) =>
+          context.read<SettingsProvider>().setInsertNewAssistantAtTop(v),
     );
   }
 }
