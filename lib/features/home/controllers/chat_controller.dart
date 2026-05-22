@@ -13,10 +13,16 @@ import '../../../core/services/chat/chat_service.dart';
 /// - Conversation stream subscriptions
 /// - Message grouping and collapsing logic
 class ChatController extends ChangeNotifier {
-  ChatController({required ChatService chatService})
-    : _chatService = chatService;
+  ChatController({
+    required ChatService chatService,
+    bool Function()? lazyHistoryEnabled,
+  }) : _chatService = chatService,
+       _lazyHistoryEnabled = lazyHistoryEnabled ?? (() => true);
 
   final ChatService _chatService;
+  final bool Function() _lazyHistoryEnabled;
+
+  bool get _isLazyHistoryEnabled => _lazyHistoryEnabled();
 
   // ============================================================================
   // State Fields
@@ -164,6 +170,12 @@ class ChatController extends ChangeNotifier {
 
   void _loadInitialMessageWindow(String conversationId) {
     _totalMessageCount = _chatService.getMessageCount(conversationId);
+    if (!_isLazyHistoryEnabled) {
+      _messages = List.of(_chatService.getMessages(conversationId));
+      _loadedStartIndex = 0;
+      return;
+    }
+
     _messages = List.of(_chatService.getRecentMessages(conversationId));
     _loadedStartIndex = (_totalMessageCount - _messages.length)
         .clamp(0, _totalMessageCount)
@@ -183,7 +195,10 @@ class ChatController extends ChangeNotifier {
 
   bool loadMoreBefore({int limit = ChatService.defaultHistoryPageSize}) {
     final conversation = _currentConversation;
-    if (conversation == null || _loadedStartIndex <= 0 || limit <= 0) {
+    if (!_isLazyHistoryEnabled ||
+        conversation == null ||
+        _loadedStartIndex <= 0 ||
+        limit <= 0) {
       return false;
     }
 
@@ -209,7 +224,10 @@ class ChatController extends ChangeNotifier {
 
   bool loadMoreAfter({int limit = ChatService.defaultHistoryPageSize}) {
     final conversation = _currentConversation;
-    if (conversation == null || !hasMoreAfter || limit <= 0) {
+    if (!_isLazyHistoryEnabled ||
+        conversation == null ||
+        !hasMoreAfter ||
+        limit <= 0) {
       return false;
     }
 
@@ -234,10 +252,12 @@ class ChatController extends ChangeNotifier {
   }
 
   bool loadStartWindow() {
+    if (!_isLazyHistoryEnabled) return false;
     return _loadWindow(start: 0, limit: ChatService.defaultLoadedWindowMax);
   }
 
   bool loadEndWindow() {
+    if (!_isLazyHistoryEnabled) return false;
     final conversation = _currentConversation;
     if (conversation == null) return false;
     _totalMessageCount = _chatService.getMessageCount(conversation.id);
@@ -264,6 +284,7 @@ class ChatController extends ChangeNotifier {
     String messageId, {
     int leadingContext = ChatService.defaultHistoryPageSize,
   }) {
+    if (!_isLazyHistoryEnabled) return false;
     final conversation = _currentConversation;
     if (conversation == null) return false;
 
@@ -338,7 +359,10 @@ class ChatController extends ChangeNotifier {
   }
 
   List<ChatMessage> _trimWindowEnd(List<ChatMessage> messages) {
-    if (messages.length <= ChatService.defaultLoadedWindowMax) return messages;
+    if (!_isLazyHistoryEnabled ||
+        messages.length <= ChatService.defaultLoadedWindowMax) {
+      return messages;
+    }
     return messages.sublist(0, ChatService.defaultLoadedWindowMax);
   }
 
@@ -397,7 +421,7 @@ class ChatController extends ChangeNotifier {
     _messages.add(message);
     _totalMessageCount += 1;
     final overflow = _messages.length - ChatService.defaultLoadedWindowMax;
-    if (overflow > 0) {
+    if (_isLazyHistoryEnabled && overflow > 0) {
       _messages = _messages.sublist(overflow);
       _loadedStartIndex += overflow;
     }
@@ -433,7 +457,7 @@ class ChatController extends ChangeNotifier {
     }
 
     final overflow = _messages.length - ChatService.defaultLoadedWindowMax;
-    if (overflow > 0) {
+    if (_isLazyHistoryEnabled && overflow > 0) {
       _messages = _messages.sublist(overflow);
       _loadedStartIndex += overflow;
     }
@@ -506,6 +530,14 @@ class ChatController extends ChangeNotifier {
     if (_totalMessageCount == 0) {
       _messages = [];
       _loadedStartIndex = 0;
+      notifyListeners();
+      return;
+    }
+
+    if (!_isLazyHistoryEnabled) {
+      _messages = List.of(_chatService.getMessages(conversationId));
+      _loadedStartIndex = 0;
+      _totalMessageCount = _messages.length;
       notifyListeners();
       return;
     }

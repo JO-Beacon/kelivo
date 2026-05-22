@@ -47,6 +47,8 @@ app.*.map.json
 
 # Android release signing secrets
 /android/key.properties
+/android/app/key.properties
+/android/app/kelivo-release.jks
 /android/app/*.jks
 /android/app/*.keystore
 
@@ -69,5 +71,18 @@ internationalization.md
 /.agents/
 /skills-lock.json
 installer.iss
+
+# Local release artifacts
+/Kelivo_windows_*.zip
+/Kelivo_windows_*_setup.exe
+/build/installer-languages/
+
+# Local Python repair tool artifacts
+/repair_chat_archive/.venv/
+/repair_chat_archive/BUG/*.backup.json
+/repair_chat_archive/BUG/*.fixed.json
+
 /参考文件/
-安卓apk.lnk
+安卓APK.lnk
+lib/core/services/api/providers/google_vertex.dart
+windows安装程序.lnk

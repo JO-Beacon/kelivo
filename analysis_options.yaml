@@ -31,3 +31,4 @@ linter:
 analyzer:
   exclude:
     - dependencies/flutter_tts/**
+    - 参考文件/**

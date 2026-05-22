@@ -94,6 +94,8 @@ class _DisplaySettingsBody extends StatelessWidget {
                   _ToggleRowAssistantMarkdown(),
                   _RowDivider(),
                   _AutoCollapseCodeBlocksSection(),
+                  _RowDivider(),
+                  _ToggleRowLazyHistory(),
                 ],
               ),
               const SizedBox(height: 16),
@@ -2584,6 +2586,21 @@ class _ToggleRow extends StatelessWidget {
           IosSwitch(value: value, onChanged: onChanged),
         ],
       ),
+    );
+  }
+}
+
+class _ToggleRowLazyHistory extends StatelessWidget {
+  const _ToggleRowLazyHistory();
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final sp = context.watch<SettingsProvider>();
+    return _ToggleRow(
+      label: l10n.displaySettingsPageLazyHistoryTitle,
+      value: sp.lazyHistoryEnabled,
+      onChanged: (v) =>
+          context.read<SettingsProvider>().setLazyHistoryEnabled(v),
     );
   }
 }

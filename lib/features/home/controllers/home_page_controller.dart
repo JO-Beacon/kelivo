@@ -286,7 +286,11 @@ class HomePageController extends ChangeNotifier {
 
   void _initializeControllers() {
     _chatService = _context.read<ChatService>();
-    _chatController = ChatController(chatService: _chatService);
+    _chatController = ChatController(
+      chatService: _chatService,
+      lazyHistoryEnabled: () =>
+          _context.read<SettingsProvider>().lazyHistoryEnabled,
+    );
     _chatControllerReady = true;
     _streamController = stream_ctrl.StreamController(
       chatService: _chatService,

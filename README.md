@@ -170,24 +170,50 @@
 
 修复策略：
 
-- 采用展示层修复，不迁移、不重写用户存档。
+- 第一层是展示层兼容：不迁移、不重写用户旧存档。
 - [`ChatController.collapseVersions()`](lib/features/home/controllers/chat_controller.dart) 折叠版本消息时，必须按持久化会话里的原始消息位置稳定排序。
 - 当前懒加载窗口只应显示原始组锚点也在当前窗口内的版本组，避免旧消息的新版本被误插入到当前可见上下文。
-- 不要为了这个问题直接改 [`ChatService.appendMessageVersion()`](lib/core/services/chat/chat_service.dart) 的存储结构，除非另有明确迁移方案。
+- 第二层是新写入源头修复：[`ChatService.appendMessageVersion()`](lib/core/services/chat/chat_service.dart) 和 [`ChatService.addMessage()`](lib/core/services/chat/chat_service.dart) 对 `groupId + version > 0` 的新版本消息，必须插回同组消息附近，而不是继续追加到会话尾部。
+- 普通新消息仍追加到尾部；找不到同组锚点时也应回退追加到尾部，避免破坏写入流程。
+- 旧存档彻底重排不属于应用自动迁移范围。如需清理旧 `chats.json`，必须使用完全独立的修复工具并保留备份。
+- 删除版本分支后必须按懒加载开关同步当前消息列表：懒加载关闭时，[`ChatController.reloadMessages()`](lib/features/home/controllers/chat_controller.dart) 必须重新读取完整会话；懒加载开启时，仍保持当前有界窗口，不能意外全量展开历史。
+- 单版本删除和删除全部版本都会经过 [`HomeViewModel._deleteMessageVersions()`](lib/features/home/controllers/home_view_model.dart)，最终统一调用 [`ChatController.reloadMessages()`](lib/features/home/controllers/chat_controller.dart)，不能绕开这条同步链路。
+
+第二阶段独立工具：
+
+- 独立工具目录：[`repair_chat_archive/`](repair_chat_archive/)
+- 主程序：[`repair_chat_archive/repair_chat_archive.py`](repair_chat_archive/repair_chat_archive.py)
+- 工具说明：[`repair_chat_archive/README.md`](repair_chat_archive/README.md)
+- 测试文件：[`repair_chat_archive/tests/test_repair_chat_archive.py`](repair_chat_archive/tests/test_repair_chat_archive.py)
+- 运行方式：进入 [`repair_chat_archive/`](repair_chat_archive/) 后执行 `uv run python repair_chat_archive.py path/to/chats.json`。
+- 默认输出：`chats.fixed.json`。
+- 默认备份：`chats.backup.json`。
+- 该工具只使用 Python 标准库，不导入 Kelivo 的 [`lib/`](lib/) 代码，不依赖 Flutter / Dart，不修改 Kelivo 本地数据库。
+- 该工具只重排 `Conversation.messageIds`，不修改消息正文、消息 ID、版本号、时间戳、会话 ID、`versionSelections` 或备份 schema。
+- 遇到重复 `messageIds`、缺失消息、找不到非版本锚点、JSON 结构异常时，必须保守跳过并打印报告，不能强行改坏用户存档。
 
 保护范围：
 
 - 展示层折叠逻辑：[`lib/features/home/controllers/chat_controller.dart`](lib/features/home/controllers/chat_controller.dart)
 - 长会话懒加载与版本消息回归测试：[`test/features/home/controllers/chat_controller_lazy_history_test.dart`](test/features/home/controllers/chat_controller_lazy_history_test.dart)
-- 底层版本追加逻辑兼容边界：[`lib/core/services/chat/chat_service.dart`](lib/core/services/chat/chat_service.dart)
+- 底层版本写入顺序：[`lib/core/services/chat/chat_service.dart`](lib/core/services/chat/chat_service.dart)
+- 底层版本写入顺序测试：[`test/core/services/chat/chat_service_temporary_conversation_test.dart`](test/core/services/chat/chat_service_temporary_conversation_test.dart)
+- 第二阶段独立旧存档修复工具：[`repair_chat_archive/`](repair_chat_archive/)
 
 同步或重构时的检查点：
 
 - 长会话尾部窗口不能显示原始组锚点不在窗口内的旧消息编辑版本。
 - 完整会话折叠结果仍要把选中的编辑版本放回原始消息位置。
+- 编辑旧消息产生的新版本，不能被写到会话尾部。
+- 重新生成旧助手消息产生的新版本，不能被写到会话尾部。
+- 普通新消息仍应写到会话尾部，不能被错误插入旧消息组。
+- 找不到同组锚点的版本消息应安全回退追加到尾部。
 - 模型请求上下文和 UI 展示顺序不能混为一谈。
-- 不能通过迁移或重写存档来掩盖这个展示层问题。
-- 修改相关逻辑后，至少运行 [`test/features/home/controllers/chat_controller_lazy_history_test.dart`](test/features/home/controllers/chat_controller_lazy_history_test.dart)。
+- 不要在应用启动、打开会话或导入备份时静默重排旧存档。
+- 关闭懒加载后删除旧分支，聊天列表必须立即保留删除后的完整会话，不能只显示删除前局部窗口，也不能依赖切换会话后才恢复。
+- 开启懒加载后删除旧分支，聊天列表必须继续保持有界窗口，不能为了修复删除同步而回退成全量渲染长会话。
+- 修改相关 Dart 逻辑后，至少运行 [`test/features/home/controllers/chat_controller_lazy_history_test.dart`](test/features/home/controllers/chat_controller_lazy_history_test.dart) 和 [`test/core/services/chat/chat_service_temporary_conversation_test.dart`](test/core/services/chat/chat_service_temporary_conversation_test.dart)。
+- 修改独立 Python 工具后，进入 [`repair_chat_archive/`](repair_chat_archive/) 运行 `uv run --with pytest pytest` 和 `python -m py_compile repair_chat_archive.py tests\\test_repair_chat_archive.py`。
 
 ## 同步 [原版](https://github.com/Chevey339/kelivo) 代码前的最低检查
 
@@ -201,7 +227,7 @@
 6. 创建分支时的克隆数据完整性是否仍保留，消息身份、版本组、元数据、工具事件和 thought signature 不能丢。
 7. 创建分支时的源消息选择是否仍按目标消息原始下标连续截取，不能回退为按 `groupId` 集合筛选。
 8. [`gpt_markdown`](dependencies/gpt_markdown) 是否仍使用本地路径依赖，不能回退为 pub.dev 版本约束。
-9. 长会话版本消息展示修复是否仍保留，尤其是 [`ChatController.collapseVersions()`](lib/features/home/controllers/chat_controller.dart) 的稳定排序与窗口过滤逻辑。
+9. 长会话版本消息修复是否仍保留，包括 [`ChatController.collapseVersions()`](lib/features/home/controllers/chat_controller.dart) 的稳定排序与窗口过滤逻辑、[`ChatController.reloadMessages()`](lib/features/home/controllers/chat_controller.dart) 删除分支后的懒加载开关分流、[`ChatService`](lib/core/services/chat/chat_service.dart) 对新版本消息插回同组附近的写入逻辑，以及 [`repair_chat_archive/`](repair_chat_archive/) 独立旧存档修复工具。
 10. [`analysis_options.yaml`](analysis_options.yaml) 是否仍排除 `参考文件/**`。
 11. [`.gitignore`](.gitignore) 是否仍忽略本地安装器、参考源码副本和本地快捷方式。
 12. 如果同步覆盖了 ARB 文件，必须重新补齐四个语言文件并运行本地化生成。

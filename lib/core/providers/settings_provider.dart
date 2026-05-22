@@ -124,6 +124,8 @@ class SettingsProvider extends ChangeNotifier {
   static const String _displayShowRegenerateConfirmDialogKey =
       'display_show_regenerate_confirm_dialog_v1';
   static const String _displayShowMessageNavKey = 'display_show_message_nav_v1';
+  static const String _displayLazyHistoryEnabledKey =
+      'display_lazy_history_enabled_v1';
   static const String _displayDesktopMessageNavButtonsModeKey =
       'display_desktop_message_nav_buttons_mode_v1';
   static const String _displayUseNewAssistantAvatarUxKey =
@@ -814,6 +816,7 @@ class SettingsProvider extends ChangeNotifier {
     _showRegenerateConfirmDialog =
         prefs.getBool(_displayShowRegenerateConfirmDialogKey) ?? true;
     _showMessageNavButtons = prefs.getBool(_displayShowMessageNavKey) ?? true;
+    _lazyHistoryEnabled = prefs.getBool(_displayLazyHistoryEnabledKey) ?? true;
     _desktopMessageNavButtonsMode = _parseDesktopMessageNavButtonsMode(
       prefs.getString(_displayDesktopMessageNavButtonsModeKey),
       legacyEnabled: _showMessageNavButtons,
@@ -3030,6 +3033,16 @@ DO NOT GIVE ANSWERS OR DO HOMEWORK FOR THE USER. If the user asks a math or logi
     await prefs.setBool(_displayShowMessageNavKey, v);
   }
 
+  bool _lazyHistoryEnabled = true;
+  bool get lazyHistoryEnabled => _lazyHistoryEnabled;
+  Future<void> setLazyHistoryEnabled(bool v) async {
+    if (_lazyHistoryEnabled == v) return;
+    _lazyHistoryEnabled = v;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_displayLazyHistoryEnabledKey, v);
+  }
+
   // Display: use the new assistant avatar UX in app bars.
   bool _useNewAssistantAvatarUx = false;
   bool get useNewAssistantAvatarUx => _useNewAssistantAvatarUx;
@@ -3704,6 +3717,7 @@ DO NOT GIVE ANSWERS OR DO HOMEWORK FOR THE USER. If the user asks a math or logi
     copy._regenerateDeleteTrailingMessages = _regenerateDeleteTrailingMessages;
     copy._showRegenerateConfirmDialog = _showRegenerateConfirmDialog;
     copy._showMessageNavButtons = _showMessageNavButtons;
+    copy._lazyHistoryEnabled = _lazyHistoryEnabled;
     copy._useNewAssistantAvatarUx = _useNewAssistantAvatarUx;
     copy._showProviderInModelCapsule = _showProviderInModelCapsule;
     copy._showProviderInChatMessage = _showProviderInChatMessage;

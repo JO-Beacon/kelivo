@@ -1615,6 +1615,15 @@ class RenderingSettingsPage extends StatelessWidget {
                 _iosDivider(context),
                 const _AutoCollapseCodeBlockLinesRow(),
               ],
+              _iosDivider(context),
+              _iosSwitchRow(
+                context,
+                icon: Lucide.History,
+                label: l10n.displaySettingsPageLazyHistoryTitle,
+                value: sp.lazyHistoryEnabled,
+                onChanged: (v) =>
+                    context.read<SettingsProvider>().setLazyHistoryEnabled(v),
+              ),
               if (Platform.isAndroid || Platform.isIOS) ...[
                 _iosDivider(context),
                 _iosSwitchRow(

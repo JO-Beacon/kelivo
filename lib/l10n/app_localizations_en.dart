@@ -2095,6 +2095,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Auto-collapse Code Blocks';
 
   @override
+  String get displaySettingsPageLazyHistoryTitle => 'Lazy-load chat history';
+
+  @override
   String get displaySettingsPageAutoCollapseCodeBlockLinesTitle =>
       'Auto-collapse threshold';
 

@@ -3995,6 +3995,12 @@ abstract class AppLocalizations {
   /// **'Auto-collapse Code Blocks'**
   String get displaySettingsPageAutoCollapseCodeBlockTitle;
 
+  /// No description provided for @displaySettingsPageLazyHistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Lazy-load chat history'**
+  String get displaySettingsPageLazyHistoryTitle;
+
   /// No description provided for @displaySettingsPageAutoCollapseCodeBlockLinesTitle.
   ///
   /// In en, this message translates to:

@@ -6,9 +6,10 @@ import 'package:Kelivo/core/services/chat/chat_service.dart';
 import 'package:Kelivo/features/home/controllers/chat_controller.dart';
 
 class _FakeLazyChatService extends ChatService {
-  _FakeLazyChatService(this._messages);
+  _FakeLazyChatService(this._messages, {this.allowFullLoad = false});
 
   final List<ChatMessage> _messages;
+  final bool allowFullLoad;
   int fullLoadCalls = 0;
   int recentLoadCalls = 0;
   int rangeLoadCalls = 0;
@@ -16,7 +17,10 @@ class _FakeLazyChatService extends ChatService {
   @override
   List<ChatMessage> getMessages(String conversationId) {
     fullLoadCalls++;
-    throw StateError('full message load should not run on conversation open');
+    if (!allowFullLoad) {
+      throw StateError('full message load should not run on conversation open');
+    }
+    return List<ChatMessage>.of(_messages);
   }
 
   @override
@@ -174,6 +178,72 @@ void main() {
       expect(controller.totalMessageCount, 100);
       expect(controller.hasMoreBefore, isTrue);
     });
+
+    test(
+      'opening a conversation loads all messages when lazy history is disabled',
+      () {
+        chatService = _FakeLazyChatService(messages, allowFullLoad: true);
+        controller.dispose();
+        controller = ChatController(
+          chatService: chatService,
+          lazyHistoryEnabled: () => false,
+        );
+
+        controller.setCurrentConversation(conversation);
+
+        expect(chatService.fullLoadCalls, 1);
+        expect(chatService.recentLoadCalls, 0);
+        expect(controller.messages, messages);
+        expect(controller.loadedStartIndex, 0);
+        expect(controller.totalMessageCount, 100);
+        expect(controller.hasMoreBefore, isFalse);
+        expect(controller.hasMoreAfter, isFalse);
+        expect(controller.loadMoreBefore(), isFalse);
+        expect(controller.loadMoreAfter(), isFalse);
+      },
+    );
+
+    test(
+      'reloading after deletion keeps full history when lazy history is disabled',
+      () {
+        chatService = _FakeLazyChatService(messages, allowFullLoad: true);
+        controller.dispose();
+        controller = ChatController(
+          chatService: chatService,
+          lazyHistoryEnabled: () => false,
+        );
+        controller.setCurrentConversation(conversation);
+        messages.removeRange(77, 80);
+
+        controller.reloadMessages();
+
+        expect(controller.messages, messages);
+        expect(controller.messages.length, 97);
+        expect(controller.messages.last.id, 'message-99');
+        expect(controller.loadedStartIndex, 0);
+        expect(controller.totalMessageCount, 97);
+        expect(controller.hasMoreAfter, isFalse);
+      },
+    );
+
+    test(
+      'reloading after deletion keeps bounded window when lazy history is enabled',
+      () {
+        controller.setCurrentConversation(conversation);
+        messages.removeRange(77, 80);
+
+        controller.reloadMessages();
+
+        expect(controller.messages.length, 20);
+        expect(controller.messages.first.id, 'message-80');
+        expect(controller.messages.last.id, 'message-99');
+        expect(controller.loadedStartIndex, 77);
+        expect(controller.totalMessageCount, 97);
+        expect(controller.hasMoreBefore, isTrue);
+        expect(controller.hasMoreAfter, isFalse);
+        expect(chatService.fullLoadCalls, 0);
+      },
+    );
 
     test(
       'updating message role persists through service and syncs loaded list',

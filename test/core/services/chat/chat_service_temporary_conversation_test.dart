@@ -170,4 +170,140 @@ void main() {
       expect(service.getConversation(conversation.id)?.messageIds, isEmpty);
     });
   });
+
+  group('ChatService message version ordering', () {
+    test(
+      'edited message version is inserted next to its original group',
+      () async {
+        final service = ChatService();
+        await service.init();
+
+        final conversation = await service.createDraftConversation(
+          title: 'Chat',
+        );
+        final first = await service.addMessage(
+          conversationId: conversation.id,
+          role: 'user',
+          content: 'first',
+        );
+        final second = await service.addMessage(
+          conversationId: conversation.id,
+          role: 'assistant',
+          content: 'second',
+        );
+        final third = await service.addMessage(
+          conversationId: conversation.id,
+          role: 'user',
+          content: 'third',
+        );
+
+        final edited = await service.appendMessageVersion(
+          messageId: first.id,
+          content: 'first edited',
+        );
+
+        expect(edited, isNotNull);
+        expect(service.getConversation(conversation.id)!.messageIds, [
+          first.id,
+          edited!.id,
+          second.id,
+          third.id,
+        ]);
+        expect(service.getMessages(conversation.id).map((m) => m.id), [
+          first.id,
+          edited.id,
+          second.id,
+          third.id,
+        ]);
+        expect(service.getVersionSelections(conversation.id), {
+          first.id: edited.version,
+        });
+      },
+    );
+
+    test(
+      'regenerated assistant version is inserted next to its group',
+      () async {
+        final service = ChatService();
+        await service.init();
+
+        final conversation = await service.createDraftConversation(
+          title: 'Chat',
+        );
+        final firstUser = await service.addMessage(
+          conversationId: conversation.id,
+          role: 'user',
+          content: 'first user',
+        );
+        final firstAssistant = await service.addMessage(
+          conversationId: conversation.id,
+          role: 'assistant',
+          content: 'first assistant',
+        );
+        final secondUser = await service.addMessage(
+          conversationId: conversation.id,
+          role: 'user',
+          content: 'second user',
+        );
+        final secondAssistant = await service.addMessage(
+          conversationId: conversation.id,
+          role: 'assistant',
+          content: 'second assistant',
+        );
+
+        final regenerated = await service.addMessage(
+          conversationId: conversation.id,
+          role: 'assistant',
+          content: '',
+          groupId: firstAssistant.id,
+          version: 1,
+          isStreaming: true,
+        );
+
+        expect(service.getConversation(conversation.id)!.messageIds, [
+          firstUser.id,
+          firstAssistant.id,
+          regenerated.id,
+          secondUser.id,
+          secondAssistant.id,
+        ]);
+        expect(service.getMessages(conversation.id).map((m) => m.id), [
+          firstUser.id,
+          firstAssistant.id,
+          regenerated.id,
+          secondUser.id,
+          secondAssistant.id,
+        ]);
+      },
+    );
+
+    test(
+      'versioned message falls back to tail when group anchor is missing',
+      () async {
+        final service = ChatService();
+        await service.init();
+
+        final conversation = await service.createDraftConversation(
+          title: 'Chat',
+        );
+        final first = await service.addMessage(
+          conversationId: conversation.id,
+          role: 'user',
+          content: 'first',
+        );
+        final orphanVersion = await service.addMessage(
+          conversationId: conversation.id,
+          role: 'assistant',
+          content: '',
+          groupId: 'missing-group',
+          version: 1,
+        );
+
+        expect(service.getConversation(conversation.id)!.messageIds, [
+          first.id,
+          orphanVersion.id,
+        ]);
+      },
+    );
+  });
 }

@@ -895,6 +895,7 @@
   "displaySettingsPageEnableAssistantMarkdownTitle": "Render assistant messages with Markdown",
   "displaySettingsPageMobileCodeBlockWrapTitle": "Mobile Code Block Word Wrap",
   "displaySettingsPageAutoCollapseCodeBlockTitle": "Auto-collapse Code Blocks",
+  "displaySettingsPageLazyHistoryTitle": "Lazy-load chat history",
   "displaySettingsPageAutoCollapseCodeBlockLinesTitle": "Auto-collapse threshold",
   "displaySettingsPageAutoCollapseCodeBlockLinesUnit": "lines",
   "messageExportSheetFormatTitle": "Export Format",

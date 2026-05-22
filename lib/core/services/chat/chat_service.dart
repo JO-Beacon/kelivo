@@ -839,7 +839,12 @@ class ChatService extends ChangeNotifier {
       _trackStreamingId(message.id);
     }
 
-    conversation.messageIds.add(message.id);
+    final insertIndex = _insertMessageIdNearGroup(
+      conversation,
+      message.id,
+      groupId: groupId,
+      version: version,
+    );
     conversation.updatedAt = DateTime.now();
     if (temporary) {
       _messagesCache.putIfAbsent(conversationId, () => <ChatMessage>[]);
@@ -849,11 +854,48 @@ class ChatService extends ChangeNotifier {
 
     // Update cache
     if (_messagesCache.containsKey(conversationId)) {
-      _messagesCache[conversationId]!.add(message);
+      final cache = _messagesCache[conversationId]!;
+      final safeIndex = insertIndex.clamp(0, cache.length).toInt();
+      cache.insert(safeIndex, message);
     }
 
     notifyListeners();
     return message;
+  }
+
+  int _insertMessageIdNearGroup(
+    Conversation conversation,
+    String messageId, {
+    String? groupId,
+    int? version,
+  }) {
+    final isExistingGroupVersion =
+        groupId != null && groupId.isNotEmpty && (version ?? 0) > 0;
+    if (!isExistingGroupVersion) {
+      conversation.messageIds.add(messageId);
+      return conversation.messageIds.length - 1;
+    }
+
+    var insertIndex = -1;
+    for (var i = 0; i < conversation.messageIds.length; i++) {
+      final existing = _messageForConversation(
+        conversation.id,
+        conversation.messageIds[i],
+      );
+      if (existing == null) continue;
+      final existingGroupId = existing.groupId ?? existing.id;
+      if (existingGroupId == groupId) {
+        insertIndex = i + 1;
+      }
+    }
+
+    if (insertIndex < 0) {
+      conversation.messageIds.add(messageId);
+      return conversation.messageIds.length - 1;
+    }
+
+    conversation.messageIds.insert(insertIndex, messageId);
+    return insertIndex;
   }
 
   ChatMessage? _cachedTemporaryMessage(String messageId) {
@@ -1220,25 +1262,41 @@ class ChatService extends ChangeNotifier {
       version: nextVersion,
     );
     await _messagesBox.put(newMsg.id, newMsg);
-    // Append to conversation order at the end (we'll group when rendering)
     if (_draftConversations.containsKey(cid)) {
       final draft = _draftConversations[cid]!;
-      draft.messageIds.add(newMsg.id);
+      final insertIndex = _insertMessageIdNearGroup(
+        draft,
+        newMsg.id,
+        groupId: gid,
+        version: nextVersion,
+      );
       draft.updatedAt = DateTime.now();
       draft.versionSelections[gid] = nextVersion;
+      final arr = _messagesCache[cid];
+      if (arr != null) {
+        final safeIndex = insertIndex.clamp(0, arr.length).toInt();
+        arr.insert(safeIndex, newMsg);
+      }
     } else {
       final c = _conversationsBox.get(cid);
       if (c != null) {
-        c.messageIds.add(newMsg.id);
+        final insertIndex = _insertMessageIdNearGroup(
+          c,
+          newMsg.id,
+          groupId: gid,
+          version: nextVersion,
+        );
         c.updatedAt = DateTime.now();
         // Persist selection of latest version for this group
         c.versionSelections[gid] = nextVersion;
         await c.save();
+        final arr = _messagesCache[cid];
+        if (arr != null) {
+          final safeIndex = insertIndex.clamp(0, arr.length).toInt();
+          arr.insert(safeIndex, newMsg);
+        }
       }
     }
-    // Update caches
-    final arr = _messagesCache[cid];
-    if (arr != null) arr.add(newMsg);
     notifyListeners();
     return newMsg;
   }

@@ -2035,6 +2035,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get displaySettingsPageAutoCollapseCodeBlockTitle => '自动折叠代码块';
 
   @override
+  String get displaySettingsPageLazyHistoryTitle => '懒加载聊天历史';
+
+  @override
   String get displaySettingsPageAutoCollapseCodeBlockLinesTitle => '超过多少行自动折叠';
 
   @override
@@ -6980,6 +6983,9 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String get displaySettingsPageAutoCollapseCodeBlockTitle => '自动折叠代码块';
 
   @override
+  String get displaySettingsPageLazyHistoryTitle => '懒加载聊天历史';
+
+  @override
   String get displaySettingsPageAutoCollapseCodeBlockLinesTitle => '超过多少行自动折叠';
 
   @override
@@ -11922,6 +11928,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get displaySettingsPageAutoCollapseCodeBlockTitle => '自動摺疊程式碼區塊';
+
+  @override
+  String get displaySettingsPageLazyHistoryTitle => '懶載入聊天歷史';
 
   @override
   String get displaySettingsPageAutoCollapseCodeBlockLinesTitle => '超過多少行自動摺疊';
