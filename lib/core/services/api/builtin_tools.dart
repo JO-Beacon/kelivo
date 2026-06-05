@@ -178,6 +178,8 @@ abstract class BuiltInToolsHelper {
       'claude-sonnet-4-6',
       'claude-opus-4-1-20250805',
       'claude-opus-4-20250514',
+      'deepseek-v4-pro',
+      'deepseek-v4-flash',
     };
     return supported.contains(normalized);
   }

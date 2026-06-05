@@ -4233,7 +4233,9 @@ class ProviderConfig {
     if (k.contains('gemini') || k.contains('google')) {
       return ProviderKind.google;
     }
-    if (k.contains('claude') || k.contains('anthropic')) {
+    if (k.contains('deepseek') ||
+        k.contains('claude') ||
+        k.contains('anthropic')) {
       return ProviderKind.claude;
     }
     return ProviderKind.openai;
@@ -4258,7 +4260,7 @@ class ProviderConfig {
     if (k.contains('grok') || k.contains('x.ai') || k.contains('xai')) {
       return 'https://api.x.ai/v1';
     }
-    if (k.contains('deepseek')) return 'https://api.deepseek.com/v1';
+    if (k.contains('deepseek')) return 'https://api.deepseek.com/anthropic';
     if (RegExp(r'zhipu|智谱|glm').hasMatch(k)) {
       return 'https://open.bigmodel.cn/api/paas/v4';
     }

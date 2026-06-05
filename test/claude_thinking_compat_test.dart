@@ -348,12 +348,37 @@ void main() {
       );
     });
 
-    test('Claude dynamic web search support matrix is official-only', () {
+    test('DeepSeek V4 supports Anthropic built-in search', () {
+      final cfg = ProviderConfig.defaultsFor('DeepSeek');
+
+      expect(
+        BuiltInToolsHelper.isClaudeBuiltInSearchSupportedModel(
+          'deepseek-v4-pro',
+        ),
+        isTrue,
+      );
+      expect(
+        BuiltInToolsHelper.isClaudeBuiltInSearchSupportedModel(
+          'deepseek-v4-flash',
+        ),
+        isTrue,
+      );
+      expect(
+        BuiltInToolsHelper.supportsBuiltInSearchForModel(
+          cfg: cfg,
+          modelId: 'deepseek-v4-pro',
+        ),
+        isTrue,
+      );
+    });
+
+    test('Claude dynamic web search support matrix excludes DeepSeek', () {
       final official = _claudeConfig(
         'http://localhost',
         modelOverrides: const <String, dynamic>{},
       );
       final vertex = _vertexClaudeConfig();
+      final deepSeek = ProviderConfig.defaultsFor('DeepSeek');
 
       expect(
         BuiltInToolsHelper.supportsClaudeDynamicWebSearchForModel(
@@ -380,6 +405,13 @@ void main() {
         BuiltInToolsHelper.supportsClaudeDynamicWebSearchForModel(
           cfg: vertex,
           modelId: 'claude-opus-4-7',
+        ),
+        isFalse,
+      );
+      expect(
+        BuiltInToolsHelper.supportsClaudeDynamicWebSearchForModel(
+          cfg: deepSeek,
+          modelId: 'deepseek-v4-pro',
         ),
         isFalse,
       );
@@ -410,6 +442,135 @@ void main() {
         tools.any((tool) => tool['type'] == 'code_execution_20250825'),
         isTrue,
       );
+    });
+
+    test('DeepSeek V4 built-in search uses legacy search tool only', () async {
+      final body = await _captureClaudeBuiltInSearchBody(
+        modelId: 'deepseek-v4-pro',
+        config: ProviderConfig.defaultsFor('DeepSeek').copyWith(
+          modelOverrides: const <String, dynamic>{
+            'deepseek-v4-pro': <String, dynamic>{
+              'builtInTools': <String>[BuiltInToolNames.search],
+              'webSearch': <String, dynamic>{
+                'toolVersion': 'web_search_20260209',
+              },
+            },
+          },
+        ),
+      );
+
+      final tools = (body['tools'] as List).cast<Map<String, dynamic>>();
+      expect(
+        tools.any((tool) => tool['type'] == 'web_search_20250305'),
+        isTrue,
+      );
+      expect(
+        tools.any((tool) => tool['type'] == 'web_search_20260209'),
+        isFalse,
+      );
+      expect(
+        tools.any((tool) => tool['type'] == 'code_execution_20250825'),
+        isFalse,
+      );
+    });
+
+    test('server web search end_turn does not start another round', () async {
+      var requestCount = 0;
+      final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      addTearDown(() async {
+        await server.close(force: true);
+      });
+
+      server.listen((request) async {
+        requestCount += 1;
+        request.response.statusCode = HttpStatus.ok;
+        request.response.headers.contentType = ContentType(
+          'text',
+          'event-stream',
+        );
+        void writeSse(Map<String, dynamic> event) {
+          request.response.add(utf8.encode('data: ${jsonEncode(event)}\n\n'));
+        }
+
+        writeSse({
+          'type': 'message_start',
+          'message': {
+            'id': 'msg_1',
+            'usage': {'input_tokens': 1, 'output_tokens': 0},
+          },
+        });
+        writeSse({
+          'type': 'content_block_start',
+          'index': 0,
+          'content_block': {
+            'type': 'server_tool_use',
+            'id': 'srv_1',
+            'name': 'web_search',
+          },
+        });
+        writeSse({
+          'type': 'content_block_delta',
+          'index': 0,
+          'delta': {
+            'type': 'input_json_delta',
+            'partial_json': '{"query":"Kelivo"}',
+          },
+        });
+        writeSse({'type': 'content_block_stop', 'index': 0});
+        writeSse({
+          'type': 'content_block_start',
+          'index': 1,
+          'content_block': {
+            'type': 'web_search_tool_result',
+            'tool_use_id': 'srv_1',
+            'content': [
+              {
+                'type': 'web_search_result',
+                'title': 'Kelivo',
+                'url': 'https://example.com/kelivo',
+              },
+            ],
+          },
+        });
+        writeSse({'type': 'content_block_stop', 'index': 1});
+        writeSse({
+          'type': 'content_block_start',
+          'index': 2,
+          'content_block': {'type': 'text', 'text': ''},
+        });
+        writeSse({
+          'type': 'content_block_delta',
+          'index': 2,
+          'delta': {'type': 'text_delta', 'text': '搜索完成。'},
+        });
+        writeSse({'type': 'content_block_stop', 'index': 2});
+        writeSse({
+          'type': 'message_delta',
+          'delta': {'stop_reason': 'end_turn'},
+          'usage': {'input_tokens': 1, 'output_tokens': 2},
+        });
+        writeSse({'type': 'message_stop'});
+        await request.response.close();
+      });
+
+      final chunks = await ChatApiService.sendMessageStream(
+        config: ProviderConfig.defaultsFor('DeepSeek').copyWith(
+          baseUrl: 'http://${server.address.address}:${server.port}',
+          modelOverrides: const <String, dynamic>{
+            'deepseek-v4-pro': <String, dynamic>{
+              'builtInTools': <String>[BuiltInToolNames.search],
+            },
+          },
+        ),
+        modelId: 'deepseek-v4-pro',
+        messages: const [
+          {'role': 'user', 'content': '查一下 Kelivo'},
+        ],
+      ).toList();
+
+      expect(chunks.any((chunk) => chunk.content == '搜索完成。'), isTrue);
+      expect(chunks.last.isDone, isTrue);
+      expect(requestCount, 1);
     });
 
     test(

@@ -152,7 +152,6 @@ void main() {
         final openRouter = ProviderConfig.defaultsFor('OpenRouter');
         final siliconFlow = ProviderConfig.defaultsFor('SiliconFlow');
         final vercel = ProviderConfig.defaultsFor('Vercel');
-        final deepSeek = ProviderConfig.defaultsFor('DeepSeek');
         final moonshot = ProviderConfig.defaultsFor('Moonshot');
 
         expect(aihubmix.balanceEnabled, isTrue);
@@ -170,12 +169,22 @@ void main() {
         expect(vercel.balanceEnabled, isTrue);
         expect(vercel.balanceApiPath, '/credits');
         expect(vercel.balanceResultPath, 'balance');
-        expect(deepSeek.balanceEnabled, isTrue);
-        expect(deepSeek.balanceApiPath, '/user/balance');
-        expect(deepSeek.balanceResultPath, 'balance_infos[0].total_balance');
         expect(moonshot.balanceEnabled, isTrue);
         expect(moonshot.balanceApiPath, '/users/me/balance');
         expect(moonshot.balanceResultPath, 'data.available_balance');
+      },
+    );
+
+    test(
+      'DeepSeek defaults to Anthropic-compatible provider without balance',
+      () {
+        final deepSeek = ProviderConfig.defaultsFor('DeepSeek');
+
+        expect(deepSeek.providerType, ProviderKind.claude);
+        expect(deepSeek.baseUrl, 'https://api.deepseek.com/anthropic');
+        expect(deepSeek.balanceEnabled, isFalse);
+        expect(deepSeek.balanceApiPath, '/credits');
+        expect(deepSeek.balanceResultPath, 'data.total_usage');
       },
     );
   });

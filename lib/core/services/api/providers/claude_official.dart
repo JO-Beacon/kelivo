@@ -905,15 +905,13 @@ Stream<ChatStreamChunk> _sendClaudeStream(
       totalUsage = (totalUsage ?? const TokenUsage()).merge(usage);
     }
 
-    // If no client tool calls, decide whether to continue (pause_turn/server tool) or finalize
+    // If no client tool calls, only continue when the server explicitly asks
+    // for another round. Server tools such as web_search can complete within
+    // the same turn; treating every server tool as continuation replays the
+    // finished answer and can trigger repeated search loops.
     if (anthToolUse.isEmpty) {
-      final hadServerTool =
-          assistantBlocks.any(
-            (b) => b['type'] == 'tool_use' || b['type'] == 'text',
-          ) &&
-          srvIndexToId.isNotEmpty;
       final sr = lastStopReason ?? '';
-      if (sr == 'pause_turn' || hadServerTool) {
+      if (sr == 'pause_turn') {
         // Continue this turn with assistant content only
         convo = [
           ...convo,
