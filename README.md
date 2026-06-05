@@ -215,6 +215,36 @@
 - 修改相关 Dart 逻辑后，至少运行 [`test/features/home/controllers/chat_controller_lazy_history_test.dart`](test/features/home/controllers/chat_controller_lazy_history_test.dart) 和 [`test/core/services/chat/chat_service_temporary_conversation_test.dart`](test/core/services/chat/chat_service_temporary_conversation_test.dart)。
 - 修改独立 Python 工具后，进入 [`repair_chat_archive/`](repair_chat_archive/) 运行 `uv run --with pytest pytest` 和 `python -m py_compile repair_chat_archive.py tests\\test_repair_chat_archive.py`。
 
+## 9. DeepSeek Anthropic 通道与原生搜索
+
+这是主项目保留的自定义模型接入与 BUG 修复之一。
+
+功能目标：
+
+- 默认 DeepSeek 提供商走 Anthropic 兼容通道，而不是 OpenAI 兼容 `/v1` 通道。
+- DeepSeek 默认 base URL 必须保持为 `https://api.deepseek.com/anthropic`。
+- DeepSeek V4 支持普通模型内置搜索，对应 Anthropic `web_search_20250305`。
+- DeepSeek V4 不支持“模型内置搜索(新)”，不能显示或注入 `web_search_20260209`。
+- DeepSeek 搜索完成并返回 `end_turn` 后必须结束当前轮，不能因为出现 server tool 就继续发起下一轮请求。
+
+保护范围：
+
+- 默认 provider 类型与 base URL：[`lib/core/providers/settings_provider.dart`](lib/core/providers/settings_provider.dart)
+- 内置搜索支持矩阵：[`lib/core/services/api/builtin_tools.dart`](lib/core/services/api/builtin_tools.dart)
+- Anthropic/Claude 流式 server tool 停止逻辑：[`lib/core/services/api/providers/claude_official.dart`](lib/core/services/api/providers/claude_official.dart)
+- DeepSeek 默认配置、余额边界与搜索回归测试：[`test/provider_balance_service_test.dart`](test/provider_balance_service_test.dart)、[`test/claude_thinking_compat_test.dart`](test/claude_thinking_compat_test.dart)
+
+同步或重构时的检查点：
+
+- [`ProviderConfig.classify()`](lib/core/providers/settings_provider.dart) 对 DeepSeek 必须返回 Claude/Anthropic 类型。
+- [`ProviderConfig._defaultBase()`](lib/core/providers/settings_provider.dart) 对 DeepSeek 必须返回 `https://api.deepseek.com/anthropic`。
+- [`BuiltInToolsHelper.isClaudeBuiltInSearchSupportedModel()`](lib/core/services/api/builtin_tools.dart) 必须包含 `deepseek-v4-pro` 和 `deepseek-v4-flash`。
+- [`BuiltInToolsHelper.isClaudeDynamicWebSearchSupportedModel()`](lib/core/services/api/builtin_tools.dart) 不能包含 DeepSeek V4，避免 UI 显示“模型内置搜索(新)”。
+- DeepSeek 普通内置搜索即使配置里残留 `toolVersion: web_search_20260209`，也必须降回 `web_search_20250305`，不能额外注入 `code_execution_20250825`。
+- [`_sendClaudeStream()`](lib/core/services/api/providers/claude_official.dart) 只能在 `stop_reason == pause_turn` 时续轮；`server_tool_use` + `web_search_tool_result` + `end_turn` 必须直接完成，不能重复搜索或继续深度思考。
+- DeepSeek Anthropic 默认配置不应默认启用 OpenAI 兼容余额查询。
+- 修改相关逻辑后，至少运行 [`test/claude_thinking_compat_test.dart`](test/claude_thinking_compat_test.dart)、[`test/provider_balance_service_test.dart`](test/provider_balance_service_test.dart) 和 `flutter analyze`。
+
 ## 同步 [原版](https://github.com/Chevey339/kelivo) 代码前的最低检查
 
 每次从参考源码或上游版本同步前，至少检查：
@@ -228,7 +258,8 @@
 7. 创建分支时的源消息选择是否仍按目标消息原始下标连续截取，不能回退为按 `groupId` 集合筛选。
 8. [`gpt_markdown`](dependencies/gpt_markdown) 是否仍使用本地路径依赖，不能回退为 pub.dev 版本约束。
 9. 长会话版本消息修复是否仍保留，包括 [`ChatController.collapseVersions()`](lib/features/home/controllers/chat_controller.dart) 的稳定排序与窗口过滤逻辑、[`ChatController.reloadMessages()`](lib/features/home/controllers/chat_controller.dart) 删除分支后的懒加载开关分流、[`ChatService`](lib/core/services/chat/chat_service.dart) 对新版本消息插回同组附近的写入逻辑，以及 [`repair_chat_archive/`](repair_chat_archive/) 独立旧存档修复工具。
-10. [`analysis_options.yaml`](analysis_options.yaml) 是否仍排除 `参考文件/**`。
-11. [`.gitignore`](.gitignore) 是否仍忽略本地安装器、参考源码副本和本地快捷方式。
-12. 如果同步覆盖了 ARB 文件，必须重新补齐四个语言文件并运行本地化生成。
-13. 如果同步覆盖了 Dart 代码，必须重新运行格式化、分析和测试。
+10. DeepSeek Anthropic 通道与原生搜索修复是否仍保留，包括默认 DeepSeek provider 类型、默认 `https://api.deepseek.com/anthropic`、普通内置搜索支持、禁止 DeepSeek 显示“模型内置搜索(新)”，以及 Anthropic server tool 在 `end_turn` 后不能重复续轮。
+11. [`analysis_options.yaml`](analysis_options.yaml) 是否仍排除 `参考文件/**`。
+12. [`.gitignore`](.gitignore) 是否仍忽略本地安装器、参考源码副本和本地快捷方式。
+13. 如果同步覆盖了 ARB 文件，必须重新补齐四个语言文件并运行本地化生成。
+14. 如果同步覆盖了 Dart 代码，必须重新运行格式化、分析和测试。
