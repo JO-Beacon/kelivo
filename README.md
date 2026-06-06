@@ -1,10 +1,10 @@
 <div align="center">
 
-  <img src="assets/app_icon.png" alt="Kelivo Icon" width="100" />
-  <h1>JO-Kelivo</h1>
-
   <h2>⚠️ 该fork已停止维护并独立化，见下方JO-Kelivo ⚠️</h2>
 
+  <img src="assets/app_icon.png" alt="Kelivo Icon" width="100" />
+  <h1>JO-Kelivo</h1>
+  
 </div>
 
 # [JO-Kelivo](https://github.com/JO-Beacon/JO-Kelivo/releases/latest)
