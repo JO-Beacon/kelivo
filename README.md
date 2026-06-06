@@ -3,12 +3,15 @@
   <img src="assets/app_icon.png" alt="Kelivo Icon" width="100" />
   <h1>JO-Kelivo</h1>
 
-  <h2>⚠️ 该fork已停止维护并独立化见下方JO-Kelivo ⚠️</h2>
+  <h2>⚠️ 该fork已停止维护并独立化，见下方JO-Kelivo ⚠️</h2>
 
 </div>
 
 # [JO-Kelivo](https://github.com/JO-Beacon/JO-Kelivo/releases/latest)
- 是基于 Kelivo 的非官方改版，按 GNU AGPL-3.0 发布
+
+ [JO-Kelivo](https://github.com/JO-Beacon/JO-Kelivo/releases/latest) 是基于 [Kelivo](https://github.com/Chevey339/kelivo) 的非官方改版，按 GNU AGPL-3.0 发布。
+
+ [JO-Kelivo](https://github.com/JO-Beacon/JO-Kelivo/releases/latest) 继承了该fork对 [原版](https://github.com/Chevey339/kelivo) 的所有改动并以独立应用的形式持续更新，这意味着两者可共存。
 
 🔗 [下载最新版本的JO-Kelivo](https://github.com/JO-Beacon/JO-Kelivo/releases/latest)
 
