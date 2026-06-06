@@ -1500,7 +1500,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get backupPageDeleteConfirmTitle => 'Confirm Deletion';
 
   @override
-  String backupPageDeleteConfirmContent(Object name) {
+  String backupPageDeleteConfirmContent(String name) {
     return 'Are you sure you want to delete remote backup \"$name\"? This action cannot be undone.';
   }
 
@@ -1693,6 +1693,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get messageEditPageHint => 'Enter message…';
+
+  @override
+  String get messageEditAttachmentsTitle => 'Attachments';
+
+  @override
+  String get messageEditAddImage => 'Add image';
+
+  @override
+  String get messageEditAddFile => 'Add file';
+
+  @override
+  String get messageEditNoAttachments => 'No attachments';
+
+  @override
+  String get messageEditReplaceImage => 'Replace image';
+
+  @override
+  String get messageEditRemoveAttachment => 'Remove attachment';
 
   @override
   String get selectCopyPageTitle => 'Select & Copy';
@@ -3620,6 +3638,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Display copy, resend, and more buttons below your messages';
 
   @override
+  String get displaySettingsPageSeparateUserMessageImageAttachmentsTitle =>
+      'Separate User Message Images';
+
+  @override
+  String get displaySettingsPageSeparateUserMessageImageAttachmentsSubtitle =>
+      'Show uploaded images below your message bubble instead of inside it';
+
+  @override
   String get displaySettingsPageShowModelNameTimestampTitle =>
       'Show Model Name & Timestamp';
 
@@ -4993,7 +5019,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get toolApprovalDenyHint => 'Reason (optional)';
 
   @override
-  String toolApprovalDeniedMessage(Object reason, Object toolName) {
+  String toolApprovalDeniedMessage(String toolName, String reason) {
     return 'Tool call \"$toolName\" was denied by user. Reason: $reason';
   }
 

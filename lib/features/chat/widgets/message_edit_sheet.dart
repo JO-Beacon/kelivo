@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import '../../../core/models/chat_input_data.dart';
 import '../../../core/models/chat_message.dart';
-import '../models/message_edit_result.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/ios_tactile.dart';
 import '../../../core/services/haptics.dart';
+import '../models/message_edit_result.dart';
+import '../utils/message_attachment_parser.dart';
+import 'message_attachment_editor.dart';
 
 Future<MessageEditResult?> showMessageEditSheet(
   BuildContext context, {
@@ -31,17 +34,39 @@ class _MessageEditSheet extends StatefulWidget {
 
 class _MessageEditSheetState extends State<_MessageEditSheet> {
   late final TextEditingController _controller;
+  late List<String> _imagePaths;
+  late List<DocumentAttachment> _documents;
 
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: widget.message.content);
+    final parsed = MessageAttachmentParser.parse(widget.message.content);
+    _controller = TextEditingController(text: parsed.text);
+    _imagePaths = List<String>.of(parsed.imagePaths);
+    _documents = List<DocumentAttachment>.of(parsed.documents);
   }
 
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  MessageEditResult _result({required bool shouldSend}) {
+    return MessageEditResult(
+      text: _controller.text.trim(),
+      imagePaths: _imagePaths,
+      documents: _documents,
+      shouldSend: shouldSend,
+    );
+  }
+
+  void _updateAttachments(
+    List<String> imagePaths,
+    List<DocumentAttachment> documents,
+  ) {
+    _imagePaths = imagePaths;
+    _documents = documents;
   }
 
   @override
@@ -81,10 +106,9 @@ class _MessageEditSheetState extends State<_MessageEditSheet> {
                       child: IosCardPress(
                         onTap: () {
                           Haptics.light();
-                          final text = _controller.text.trim();
-                          Navigator.of(context).pop<MessageEditResult>(
-                            MessageEditResult(content: text, shouldSend: true),
-                          );
+                          Navigator.of(
+                            context,
+                          ).pop<MessageEditResult>(_result(shouldSend: true));
                         },
                         borderRadius: BorderRadius.circular(20),
                         baseColor: Colors.transparent,
@@ -120,10 +144,9 @@ class _MessageEditSheetState extends State<_MessageEditSheet> {
                       child: IosCardPress(
                         onTap: () {
                           Haptics.light();
-                          final text = _controller.text.trim();
-                          Navigator.of(context).pop<MessageEditResult>(
-                            MessageEditResult(content: text, shouldSend: false),
-                          );
+                          Navigator.of(
+                            context,
+                          ).pop<MessageEditResult>(_result(shouldSend: false));
                         },
                         borderRadius: BorderRadius.circular(20),
                         baseColor: Colors.transparent,
@@ -151,33 +174,49 @@ class _MessageEditSheetState extends State<_MessageEditSheet> {
               Expanded(
                 child: SingleChildScrollView(
                   controller: sc,
-                  child: TextField(
-                    controller: _controller,
-                    autofocus: false,
-                    keyboardType: TextInputType.multiline,
-                    minLines: 8,
-                    maxLines: null,
-                    decoration: InputDecoration(
-                      hintText: l10n.messageEditPageHint,
-                      filled: true,
-                      fillColor: Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white10
-                          : const Color(0xFFF2F3F5),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: const BorderSide(color: Colors.transparent),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: const BorderSide(color: Colors.transparent),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: BorderSide(
-                          color: cs.primary.withValues(alpha: 0.45),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      TextField(
+                        controller: _controller,
+                        autofocus: false,
+                        keyboardType: TextInputType.multiline,
+                        minLines: 8,
+                        maxLines: null,
+                        decoration: InputDecoration(
+                          hintText: l10n.messageEditPageHint,
+                          filled: true,
+                          fillColor:
+                              Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white10
+                              : const Color(0xFFF2F3F5),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            borderSide: const BorderSide(
+                              color: Colors.transparent,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            borderSide: const BorderSide(
+                              color: Colors.transparent,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            borderSide: BorderSide(
+                              color: cs.primary.withValues(alpha: 0.45),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                      const SizedBox(height: 14),
+                      MessageAttachmentEditor(
+                        imagePaths: _imagePaths,
+                        documents: _documents,
+                        onChanged: _updateAttachments,
+                      ),
+                    ],
                   ),
                 ),
               ),

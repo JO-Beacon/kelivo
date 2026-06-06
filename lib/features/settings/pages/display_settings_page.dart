@@ -1469,6 +1469,19 @@ class ChatItemDisplaySettingsPage extends StatelessWidget {
               _iosDivider(context),
               _iosSwitchRow(
                 context,
+                icon: Lucide.Image,
+                label: l10n
+                    .displaySettingsPageSeparateUserMessageImageAttachmentsTitle,
+                subtitle: l10n
+                    .displaySettingsPageSeparateUserMessageImageAttachmentsSubtitle,
+                value: sp.separateUserMessageImageAttachments,
+                onChanged: (v) => context
+                    .read<SettingsProvider>()
+                    .setSeparateUserMessageImageAttachments(v),
+              ),
+              _iosDivider(context),
+              _iosSwitchRow(
+                context,
                 icon: Lucide.Bot,
                 label: l10n.displaySettingsPageChatModelIconTitle,
                 value: sp.showModelIcon,

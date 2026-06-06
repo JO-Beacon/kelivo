@@ -66,6 +66,8 @@ class _DisplaySettingsBody extends StatelessWidget {
                   _RowDivider(),
                   _ToggleRowShowUserMsgActions(),
                   _RowDivider(),
+                  _ToggleRowSeparateUserMessageImageAttachments(),
+                  _RowDivider(),
                   _ToggleRowShowModelIcon(),
                   _RowDivider(),
                   _ToggleRowUseNewAssistantAvatarUx(),
@@ -1991,6 +1993,24 @@ class _ToggleRowShowUserMsgActions extends StatelessWidget {
   }
 }
 
+class _ToggleRowSeparateUserMessageImageAttachments extends StatelessWidget {
+  const _ToggleRowSeparateUserMessageImageAttachments();
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final sp = context.watch<SettingsProvider>();
+    return _ToggleRow(
+      label: l10n.displaySettingsPageSeparateUserMessageImageAttachmentsTitle,
+      subtitle:
+          l10n.displaySettingsPageSeparateUserMessageImageAttachmentsSubtitle,
+      value: sp.separateUserMessageImageAttachments,
+      onChanged: (v) => context
+          .read<SettingsProvider>()
+          .setSeparateUserMessageImageAttachments(v),
+    );
+  }
+}
+
 class _ToggleRowShowModelIcon extends StatelessWidget {
   const _ToggleRowShowModelIcon();
   @override
@@ -2552,10 +2572,12 @@ class _ToggleRowNewChatOnLaunch extends StatelessWidget {
 class _ToggleRow extends StatelessWidget {
   const _ToggleRow({
     required this.label,
+    this.subtitle,
     required this.value,
     required this.onChanged,
   });
   final String label;
+  final String? subtitle;
   final bool value;
   final ValueChanged<bool>? onChanged;
   @override
@@ -2579,6 +2601,18 @@ class _ToggleRow extends StatelessWidget {
                     decoration: TextDecoration.none,
                   ),
                 ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle!,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: cs.onSurface.withValues(alpha: 0.58),
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

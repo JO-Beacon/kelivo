@@ -1,4 +1,5 @@
 {
+  "@@locale": "zh_Hans",
   "helloWorld": "你好，世界！",
   "settingsPageBackButton": "返回",
   "settingsPageTitle": "设置",
@@ -613,6 +614,12 @@
   "messageEditPageSave": "保存",
   "messageEditPageSaveAndSend": "保存并发送",
   "messageEditPageHint": "输入消息内容…",
+  "messageEditAttachmentsTitle": "附件",
+  "messageEditAddImage": "添加图片",
+  "messageEditAddFile": "添加文件",
+  "messageEditNoAttachments": "暂无附件",
+  "messageEditReplaceImage": "替换图片",
+  "messageEditRemoveAttachment": "移除附件",
   "selectCopyPageTitle": "选择复制",
   "selectCopyPageCopyAll": "复制全部",
   "selectCopyPageCopiedAll": "已复制全部",
@@ -1223,6 +1230,8 @@
   "displaySettingsPageShowUserTimestampTitle": "显示用户时间戳",
   "displaySettingsPageShowUserMessageActionsTitle": "显示用户消息操作按钮",
   "displaySettingsPageShowUserMessageActionsSubtitle": "在用户消息下方显示复制、重发与更多按钮",
+  "displaySettingsPageSeparateUserMessageImageAttachmentsTitle": "分离显示用户消息图片",
+  "displaySettingsPageSeparateUserMessageImageAttachmentsSubtitle": "将上传的图片显示在消息气泡下方，而不是气泡内部",
   "displaySettingsPageShowModelNameTimestampTitle": "显示模型名称和时间戳",
   "displaySettingsPageShowModelNameTimestampSubtitle": "是否在聊天消息中显示模型名称和时间戳",
   "displaySettingsPageShowModelNameTitle": "显示模型名称",
@@ -1646,6 +1655,13 @@
   "assistantEditDeleteSummaryContent": "确定要清除此摘要吗？",
   "backupPageDeleteConfirmTitle": "确认删除",
   "backupPageDeleteConfirmContent": "确定要删除远程备份“{name}”吗？此操作不可撤销。",
+  "@backupPageDeleteConfirmContent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "settingsPageWorldBook": "世界书",
   "worldBookTitle": "世界书",
   "worldBookAdd": "添加世界书",
@@ -1721,6 +1737,16 @@
   "toolApprovalDenyTitle": "拒绝工具调用",
   "toolApprovalDenyHint": "原因（可选）",
   "toolApprovalDeniedMessage": "工具调用 \"{toolName}\" 已被用户拒绝。原因：{reason}",
+  "@toolApprovalDeniedMessage": {
+    "placeholders": {
+      "toolName": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
   "askUserCardSubmit": "提交回答",
   "askUserCardCustomHint": "输入你的回答",
   "askUserCardSomethingElse": "其他",

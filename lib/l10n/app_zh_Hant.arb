@@ -1,4 +1,5 @@
 {
+  "@@locale": "zh_Hant",
   "helloWorld": "你好，世界！",
   "settingsPageBackButton": "返回",
   "settingsPageTitle": "設定",
@@ -571,6 +572,12 @@
   "messageEditPageSave": "儲存",
   "messageEditPageSaveAndSend": "儲存並發送",
   "messageEditPageHint": "輸入訊息內容…",
+  "messageEditAttachmentsTitle": "附件",
+  "messageEditAddImage": "新增圖片",
+  "messageEditAddFile": "新增檔案",
+  "messageEditNoAttachments": "暫無附件",
+  "messageEditReplaceImage": "替換圖片",
+  "messageEditRemoveAttachment": "移除附件",
   "selectCopyPageTitle": "選擇複製",
   "selectCopyPageCopyAll": "複製全部",
   "selectCopyPageCopiedAll": "已複製全部",
@@ -1181,6 +1188,8 @@
   "displaySettingsPageShowUserTimestampTitle": "顯示使用者時間戳",
   "displaySettingsPageShowUserMessageActionsTitle": "顯示使用者訊息操作按鈕",
   "displaySettingsPageShowUserMessageActionsSubtitle": "在使用者訊息下方顯示複製、重傳與更多按鈕",
+  "displaySettingsPageSeparateUserMessageImageAttachmentsTitle": "分離顯示使用者訊息圖片",
+  "displaySettingsPageSeparateUserMessageImageAttachmentsSubtitle": "將上傳的圖片顯示在訊息氣泡下方，而不是氣泡內部",
   "displaySettingsPageShowModelNameTimestampTitle": "顯示模型名稱與時間戳",
   "displaySettingsPageShowModelNameTimestampSubtitle": "是否在聊天訊息中顯示模型名稱及時間戳",
   "displaySettingsPageShowModelNameTitle": "顯示模型名稱",
@@ -1646,6 +1655,13 @@
   "fileUploadDuplicateUploadNew": "重新上傳",
   "backupPageDeleteConfirmTitle": "確認刪除",
   "backupPageDeleteConfirmContent": "確定要刪除遠端備份「{name}」嗎？此操作不可撤銷。",
+  "@backupPageDeleteConfirmContent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "settingsPageWorldBook": "世界書",
   "worldBookTitle": "世界書",
   "worldBookAdd": "新增世界書",
@@ -1721,6 +1737,16 @@
   "toolApprovalDenyTitle": "拒絕工具調用",
   "toolApprovalDenyHint": "原因（可選）",
   "toolApprovalDeniedMessage": "工具調用 \"{toolName}\" 已被使用者拒絕。原因：{reason}",
+  "@toolApprovalDeniedMessage": {
+    "placeholders": {
+      "toolName": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
   "askUserCardSubmit": "提交回答",
   "askUserCardCustomHint": "輸入你的回答",
   "askUserCardSomethingElse": "其他",

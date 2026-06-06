@@ -1,4 +1,5 @@
 {
+  "@@locale": "en",
   "helloWorld": "Hello World!",
   "settingsPageBackButton": "Back",
   "settingsPageTitle": "Settings",
@@ -618,6 +619,13 @@
   "backupPageDeleteTooltip": "Delete",
   "backupPageDeleteConfirmTitle": "Confirm Deletion",
   "backupPageDeleteConfirmContent": "Are you sure you want to delete remote backup \"{name}\"? This action cannot be undone.",
+  "@backupPageDeleteConfirmContent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "backupPageBackupManagement": "Backup Management",
   "backupPageWebDavBackup": "WebDAV Backup",
   "backupPageWebDavServerSettings": "WebDAV Server Settings",
@@ -686,6 +694,12 @@
   "messageEditPageSave": "Save",
   "messageEditPageSaveAndSend": "Save & Send",
   "messageEditPageHint": "Enter message…",
+  "messageEditAttachmentsTitle": "Attachments",
+  "messageEditAddImage": "Add image",
+  "messageEditAddFile": "Add file",
+  "messageEditNoAttachments": "No attachments",
+  "messageEditReplaceImage": "Replace image",
+  "messageEditRemoveAttachment": "Remove attachment",
   "selectCopyPageTitle": "Select & Copy",
   "selectCopyPageCopyAll": "Copy All",
   "selectCopyPageCopiedAll": "Copied all",
@@ -1529,6 +1543,8 @@
   "displaySettingsPageShowUserTimestampTitle": "Show User Timestamp",
   "displaySettingsPageShowUserMessageActionsTitle": "Show User Message Actions",
   "displaySettingsPageShowUserMessageActionsSubtitle": "Display copy, resend, and more buttons below your messages",
+  "displaySettingsPageSeparateUserMessageImageAttachmentsTitle": "Separate User Message Images",
+  "displaySettingsPageSeparateUserMessageImageAttachmentsSubtitle": "Show uploaded images below your message bubble instead of inside it",
   "displaySettingsPageShowModelNameTimestampTitle": "Show Model Name & Timestamp",
   "displaySettingsPageShowModelNameTimestampSubtitle": "Show model name and the timestamp below it in chat messages",
   "displaySettingsPageShowModelNameTitle": "Show Model Name",
@@ -2078,6 +2094,16 @@
   "toolApprovalDenyTitle": "Deny tool call",
   "toolApprovalDenyHint": "Reason (optional)",
   "toolApprovalDeniedMessage": "Tool call \"{toolName}\" was denied by user. Reason: {reason}",
+  "@toolApprovalDeniedMessage": {
+    "placeholders": {
+      "toolName": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
   "askUserCardSubmit": "Submit answer",
   "askUserCardCustomHint": "Type your answer",
   "askUserCardSomethingElse": "Something else",

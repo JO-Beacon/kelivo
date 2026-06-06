@@ -2919,7 +2919,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Are you sure you want to delete remote backup \"{name}\"? This action cannot be undone.'**
-  String backupPageDeleteConfirmContent(Object name);
+  String backupPageDeleteConfirmContent(String name);
 
   /// No description provided for @backupPageBackupManagement.
   ///
@@ -3286,6 +3286,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Enter message…'**
   String get messageEditPageHint;
+
+  /// No description provided for @messageEditAttachmentsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Attachments'**
+  String get messageEditAttachmentsTitle;
+
+  /// No description provided for @messageEditAddImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Add image'**
+  String get messageEditAddImage;
+
+  /// No description provided for @messageEditAddFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Add file'**
+  String get messageEditAddFile;
+
+  /// No description provided for @messageEditNoAttachments.
+  ///
+  /// In en, this message translates to:
+  /// **'No attachments'**
+  String get messageEditNoAttachments;
+
+  /// No description provided for @messageEditReplaceImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace image'**
+  String get messageEditReplaceImage;
+
+  /// No description provided for @messageEditRemoveAttachment.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove attachment'**
+  String get messageEditRemoveAttachment;
 
   /// No description provided for @selectCopyPageTitle.
   ///
@@ -6800,6 +6836,18 @@ abstract class AppLocalizations {
   /// **'Display copy, resend, and more buttons below your messages'**
   String get displaySettingsPageShowUserMessageActionsSubtitle;
 
+  /// No description provided for @displaySettingsPageSeparateUserMessageImageAttachmentsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Separate User Message Images'**
+  String get displaySettingsPageSeparateUserMessageImageAttachmentsTitle;
+
+  /// No description provided for @displaySettingsPageSeparateUserMessageImageAttachmentsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Show uploaded images below your message bubble instead of inside it'**
+  String get displaySettingsPageSeparateUserMessageImageAttachmentsSubtitle;
+
   /// No description provided for @displaySettingsPageShowModelNameTimestampTitle.
   ///
   /// In en, this message translates to:
@@ -9300,7 +9348,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Tool call \"{toolName}\" was denied by user. Reason: {reason}'**
-  String toolApprovalDeniedMessage(Object reason, Object toolName);
+  String toolApprovalDeniedMessage(String toolName, String reason);
 
   /// No description provided for @askUserCardSubmit.
   ///

@@ -113,6 +113,8 @@ class SettingsProvider extends ChangeNotifier {
       'display_show_model_timestamp_v1';
   static const String _displayShowUserMessageActionsKey =
       'display_show_user_message_actions_v1';
+  static const String _displaySeparateUserMessageImageAttachmentsKey =
+      'display_separate_user_message_image_attachments_v1';
   static const String _displayAutoCollapseThinkingKey =
       'display_auto_collapse_thinking_v1';
   static const String _displayCollapseThinkingStepsKey =
@@ -805,6 +807,8 @@ class SettingsProvider extends ChangeNotifier {
         prefs.getBool(_displayShowModelTimestampKey) ?? legacyModelNameTs;
     _showUserMessageActions =
         prefs.getBool(_displayShowUserMessageActionsKey) ?? true;
+    _separateUserMessageImageAttachments =
+        prefs.getBool(_displaySeparateUserMessageImageAttachmentsKey) ?? false;
     _autoCollapseThinking =
         prefs.getBool(_displayAutoCollapseThinkingKey) ?? true;
     _collapseThinkingSteps =
@@ -2916,6 +2920,17 @@ DO NOT GIVE ANSWERS OR DO HOMEWORK FOR THE USER. If the user asks a math or logi
     await prefs.setBool(_displayShowUserMessageActionsKey, v);
   }
 
+  bool _separateUserMessageImageAttachments = false;
+  bool get separateUserMessageImageAttachments =>
+      _separateUserMessageImageAttachments;
+  Future<void> setSeparateUserMessageImageAttachments(bool v) async {
+    if (_separateUserMessageImageAttachments == v) return;
+    _separateUserMessageImageAttachments = v;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_displaySeparateUserMessageImageAttachmentsKey, v);
+  }
+
   bool _showModelIcon = true;
   bool get showModelIcon => _showModelIcon;
   Future<void> setShowModelIcon(bool v) async {
@@ -3707,6 +3722,8 @@ DO NOT GIVE ANSWERS OR DO HOMEWORK FOR THE USER. If the user asks a math or logi
     copy._showTokenStats = _showTokenStats;
     copy._showUserNameTimestamp = _showUserNameTimestamp;
     copy._showUserMessageActions = _showUserMessageActions;
+    copy._separateUserMessageImageAttachments =
+        _separateUserMessageImageAttachments;
     copy._showUserName = _showUserName;
     copy._showUserTimestamp = _showUserTimestamp;
     copy._showModelName = _showModelName;

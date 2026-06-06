@@ -1459,7 +1459,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get backupPageDeleteConfirmTitle => '确认删除';
 
   @override
-  String backupPageDeleteConfirmContent(Object name) {
+  String backupPageDeleteConfirmContent(String name) {
     return '确定要删除远程备份“$name”吗？此操作不可撤销。';
   }
 
@@ -1648,6 +1648,24 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get messageEditPageHint => '输入消息内容…';
+
+  @override
+  String get messageEditAttachmentsTitle => '附件';
+
+  @override
+  String get messageEditAddImage => '添加图片';
+
+  @override
+  String get messageEditAddFile => '添加文件';
+
+  @override
+  String get messageEditNoAttachments => '暂无附件';
+
+  @override
+  String get messageEditReplaceImage => '替换图片';
+
+  @override
+  String get messageEditRemoveAttachment => '移除附件';
 
   @override
   String get selectCopyPageTitle => '选择复制';
@@ -3499,6 +3517,14 @@ class AppLocalizationsZh extends AppLocalizations {
       '在用户消息下方显示复制、重发与更多按钮';
 
   @override
+  String get displaySettingsPageSeparateUserMessageImageAttachmentsTitle =>
+      '分离显示用户消息图片';
+
+  @override
+  String get displaySettingsPageSeparateUserMessageImageAttachmentsSubtitle =>
+      '将上传的图片显示在消息气泡下方，而不是气泡内部';
+
+  @override
   String get displaySettingsPageShowModelNameTimestampTitle => '显示模型名称和时间戳';
 
   @override
@@ -4810,7 +4836,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get toolApprovalDenyHint => '原因（可选）';
 
   @override
-  String toolApprovalDeniedMessage(Object reason, Object toolName) {
+  String toolApprovalDeniedMessage(String toolName, String reason) {
     return '工具调用 \"$toolName\" 已被用户拒绝。原因：$reason';
   }
 
@@ -6407,7 +6433,7 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String get backupPageDeleteConfirmTitle => '确认删除';
 
   @override
-  String backupPageDeleteConfirmContent(Object name) {
+  String backupPageDeleteConfirmContent(String name) {
     return '确定要删除远程备份“$name”吗？此操作不可撤销。';
   }
 
@@ -6596,6 +6622,24 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get messageEditPageHint => '输入消息内容…';
+
+  @override
+  String get messageEditAttachmentsTitle => '附件';
+
+  @override
+  String get messageEditAddImage => '添加图片';
+
+  @override
+  String get messageEditAddFile => '添加文件';
+
+  @override
+  String get messageEditNoAttachments => '暂无附件';
+
+  @override
+  String get messageEditReplaceImage => '替换图片';
+
+  @override
+  String get messageEditRemoveAttachment => '移除附件';
 
   @override
   String get selectCopyPageTitle => '选择复制';
@@ -8447,6 +8491,14 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
       '在用户消息下方显示复制、重发与更多按钮';
 
   @override
+  String get displaySettingsPageSeparateUserMessageImageAttachmentsTitle =>
+      '分离显示用户消息图片';
+
+  @override
+  String get displaySettingsPageSeparateUserMessageImageAttachmentsSubtitle =>
+      '将上传的图片显示在消息气泡下方，而不是气泡内部';
+
+  @override
   String get displaySettingsPageShowModelNameTimestampTitle => '显示模型名称和时间戳';
 
   @override
@@ -9758,7 +9810,7 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String get toolApprovalDenyHint => '原因（可选）';
 
   @override
-  String toolApprovalDeniedMessage(Object reason, Object toolName) {
+  String toolApprovalDeniedMessage(String toolName, String reason) {
     return '工具调用 \"$toolName\" 已被用户拒绝。原因：$reason';
   }
 
@@ -11355,7 +11407,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get backupPageDeleteConfirmTitle => '確認刪除';
 
   @override
-  String backupPageDeleteConfirmContent(Object name) {
+  String backupPageDeleteConfirmContent(String name) {
     return '確定要刪除遠端備份「$name」嗎？此操作不可撤銷。';
   }
 
@@ -11543,6 +11595,24 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get messageEditPageHint => '輸入訊息內容…';
+
+  @override
+  String get messageEditAttachmentsTitle => '附件';
+
+  @override
+  String get messageEditAddImage => '新增圖片';
+
+  @override
+  String get messageEditAddFile => '新增檔案';
+
+  @override
+  String get messageEditNoAttachments => '暫無附件';
+
+  @override
+  String get messageEditReplaceImage => '替換圖片';
+
+  @override
+  String get messageEditRemoveAttachment => '移除附件';
 
   @override
   String get selectCopyPageTitle => '選擇複製';
@@ -13393,6 +13463,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       '在使用者訊息下方顯示複製、重傳與更多按鈕';
 
   @override
+  String get displaySettingsPageSeparateUserMessageImageAttachmentsTitle =>
+      '分離顯示使用者訊息圖片';
+
+  @override
+  String get displaySettingsPageSeparateUserMessageImageAttachmentsSubtitle =>
+      '將上傳的圖片顯示在訊息氣泡下方，而不是氣泡內部';
+
+  @override
   String get displaySettingsPageShowModelNameTimestampTitle => '顯示模型名稱與時間戳';
 
   @override
@@ -14706,7 +14784,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get toolApprovalDenyHint => '原因（可選）';
 
   @override
-  String toolApprovalDeniedMessage(Object reason, Object toolName) {
+  String toolApprovalDeniedMessage(String toolName, String reason) {
     return '工具調用 \"$toolName\" 已被使用者拒絕。原因：$reason';
   }
 

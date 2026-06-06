@@ -84,8 +84,8 @@
 
 - 本项目不再直接使用上游 [原版](https://github.com/Chevey339/kelivo) 版本号。
 - 同步上游源码后，必须在上游版本号后追加本项目改版序号。
-- 当前对外改版版本号固定显示为 `1.1.15.1`，不能回退为上游 `1.1.15` 或更早版本。
-- [`pubspec.yaml`](pubspec.yaml) 必须使用 Flutter 合法版本格式，当前写作 `1.1.15+1`，其中 `1.1.15` 对应上游版本，`1` 对应本项目改版构建号。
+- 当前对外改版版本号固定显示为 `1.1.15+1002`，不能回退为上游 `1.1.15` 或更早版本。
+- [`pubspec.yaml`](pubspec.yaml) 必须使用 Flutter 合法版本格式，当前写作 `1.1.15+1002`，其中 `1.1.15` 对应上游版本，`1002` 对应本项目改版构建号。
 
 保护范围：
 
@@ -95,8 +95,8 @@
 同步或重构时的检查点：
 
 - [`pubspec.yaml`](pubspec.yaml) 中的 `version` 不能被 [原版](https://github.com/Chevey339/kelivo) 源码覆盖回上游版本号。
-- 对外版本号应体现“上游版本 + 改版序号”，当前对外显示为 `1.1.15.1`。
-- [`pubspec.yaml`](pubspec.yaml) 中的 Flutter 合法版本当前应保持为 `1.1.15+1`。
+- 对外版本号应体现“上游版本 + 改版序号”，当前对外显示为 `1.1.15+1002`。
+- [`pubspec.yaml`](pubspec.yaml) 中的 Flutter 合法版本当前应保持为 `1.1.15+1002`。
 - 如未来继续同步上游版本，必须先确认新的改版版本号规则，再更新 [`README.md`](README.md) 和 [`pubspec.yaml`](pubspec.yaml)。
 
 ## 6. Android 只构建 APK
@@ -245,6 +245,87 @@
 - DeepSeek Anthropic 默认配置不应默认启用 OpenAI 兼容余额查询。
 - 修改相关逻辑后，至少运行 [`test/claude_thinking_compat_test.dart`](test/claude_thinking_compat_test.dart)、[`test/provider_balance_service_test.dart`](test/provider_balance_service_test.dart) 和 `flutter analyze`。
 
+## 10. 历史消息附件可视化编辑
+
+这是主项目保留的自定义体验修复之一。
+
+问题现象：
+
+- 发送前，输入框里的图片和文件有可视化附件 UI。
+- 发送后再编辑历史消息时，原本的图片和文件会退化成文本标记或链接。
+- 用户想删除、替换或继续添加图片时，需要手动处理文件路径，体验很差。
+
+修复策略：
+
+- 编辑历史消息时，必须先从消息正文中解析附件标记，而不是把附件标记直接放进文本框。
+- 文本框只展示可编辑正文。
+- 图片和文件必须显示在独立附件区。
+- 附件区支持删除已有图片/文件、继续添加图片/文件，以及替换单张图片。
+- 保存时仍按现有持久化格式组装回 `[image:path]` 和 `[file:path|name|mime]`，保持旧聊天记录兼容。
+- 编辑保存仍沿用现有版本机制：创建新消息版本，不直接覆盖旧版本。
+
+保护范围：
+
+- 附件解析与组装：[`lib/features/chat/utils/message_attachment_parser.dart`](lib/features/chat/utils/message_attachment_parser.dart)
+- 编辑结果模型：[`lib/features/chat/models/message_edit_result.dart`](lib/features/chat/models/message_edit_result.dart)
+- 附件编辑组件：[`lib/features/chat/widgets/message_attachment_editor.dart`](lib/features/chat/widgets/message_attachment_editor.dart)
+- 移动端编辑 Sheet：[`lib/features/chat/widgets/message_edit_sheet.dart`](lib/features/chat/widgets/message_edit_sheet.dart)
+- 桌面端编辑弹窗：[`lib/desktop/message_edit_dialog.dart`](lib/desktop/message_edit_dialog.dart)
+- 编辑保存入口：[`lib/features/home/controllers/home_page_controller.dart`](lib/features/home/controllers/home_page_controller.dart)
+- 底层版本写入：[`lib/core/services/chat/chat_service.dart`](lib/core/services/chat/chat_service.dart)
+- 回归测试：[`test/core/services/chat/chat_service_temporary_conversation_test.dart`](test/core/services/chat/chat_service_temporary_conversation_test.dart)
+- 本地化文案：[`lib/l10n/app_en.arb`](lib/l10n/app_en.arb)、[`lib/l10n/app_zh.arb`](lib/l10n/app_zh.arb)、[`lib/l10n/app_zh_Hans.arb`](lib/l10n/app_zh_Hans.arb)、[`lib/l10n/app_zh_Hant.arb`](lib/l10n/app_zh_Hant.arb)
+
+同步或重构时的检查点：
+
+- 编辑含图片的历史用户消息时，图片不能只显示为 `[image:...]` 文本。
+- 编辑含文件的历史用户消息时，文件不能只显示为 `[file:...]` 文本。
+- 删除附件后保存，新版本消息中不能继续包含被删掉的附件标记。
+- 替换图片后保存，新版本消息中必须使用替换后的图片路径。
+- 添加图片或文件后保存，新版本消息必须继续使用现有 `[image:path]` / `[file:path|name|mime]` 格式。
+- “保存并发送”必须使用编辑后的正文和附件重新生成回复。
+- 旧版本消息仍应保留，不能把编辑行为改成直接覆盖原消息。
+- 附件选择和复制应继续复用 [`FileImportHelper`](lib/utils/file_import_helper.dart) 与应用上传目录，不能直接引用临时选择路径作为长期存档。
+- 新增或修改附件编辑文案时，四个 ARB 文件必须同步，并运行 `flutter gen-l10n`。
+- 修改相关逻辑后，至少运行 [`test/core/services/chat/chat_service_temporary_conversation_test.dart`](test/core/services/chat/chat_service_temporary_conversation_test.dart)、`flutter analyze` 和相关平台验证。
+
+## 11. 用户消息图片分离显示设置
+
+这是主项目保留的自定义体验设置之一。
+
+功能目标：
+
+- 用户消息中的上传图片默认仍显示在消息气泡内，保持旧用户默认体验不变。
+- 移动端“显示设置 → 聊天项目显示”和桌面端“设置 → 显示 → Chat Item Display”里都有“分离显示用户消息图片”开关，可选择把用户消息图片显示到气泡下方的独立区域。
+- 该设置只影响历史消息展示层，不改变消息正文、附件标记、编辑保存、重新发送或 API 构造。
+- 开关值必须持久化，重启应用后不能丢。
+
+兼容边界：
+
+- 默认值必须是关闭，旧配置没有该 key 时应回退到原来的气泡内显示。
+- 聊天消息仍必须使用现有 `[image:path]` 持久化格式，不能为了视觉美化新增存档 schema。
+- 旧版本应用不认识该设置时应可安全忽略，不影响读取聊天记录。
+- 新版本读取旧聊天记录时不需要迁移，仍从消息正文解析图片标记。
+
+保护范围：
+
+- 设置持久化：[`lib/core/providers/settings_provider.dart`](lib/core/providers/settings_provider.dart)
+- 移动端显示设置入口：[`lib/features/settings/pages/display_settings_page.dart`](lib/features/settings/pages/display_settings_page.dart)
+- 桌面端显示设置入口：[`lib/desktop/setting/display_pane.dart`](lib/desktop/setting/display_pane.dart)
+- 用户消息展示：[`lib/features/chat/widgets/chat_message_widget.dart`](lib/features/chat/widgets/chat_message_widget.dart)
+- 回归测试：[`test/features/chat/widgets/chat_message_widget_background_test.dart`](test/features/chat/widgets/chat_message_widget_background_test.dart)
+- 本地化文案：[`lib/l10n/app_en.arb`](lib/l10n/app_en.arb)、[`lib/l10n/app_zh.arb`](lib/l10n/app_zh.arb)、[`lib/l10n/app_zh_Hans.arb`](lib/l10n/app_zh_Hans.arb)、[`lib/l10n/app_zh_Hant.arb`](lib/l10n/app_zh_Hant.arb)
+
+同步或重构时的检查点：
+
+- “分离显示用户消息图片”设置项不能从移动端或桌面端显示设置里消失。
+- 设置值必须通过 [`SettingsProvider`](lib/core/providers/settings_provider.dart) 持久化，重启应用后不能丢。
+- 默认关闭时，图片仍应显示在用户消息气泡内。
+- 开启后，图片应显示在用户消息气泡下方独立区域，并且点击预览仍能打开图片查看页。
+- 该设置不能改动 `[image:path]` / `[file:path|name|mime]` 持久化格式。
+- 新增或修改本地化 key 时，四个 ARB 文件必须同步，并运行 `flutter gen-l10n`。
+- 修改相关逻辑后，至少运行 [`test/features/chat/widgets/chat_message_widget_background_test.dart`](test/features/chat/widgets/chat_message_widget_background_test.dart)、[`test/core/services/chat/chat_service_temporary_conversation_test.dart`](test/core/services/chat/chat_service_temporary_conversation_test.dart) 和 `flutter analyze`。
+
 ## 同步 [原版](https://github.com/Chevey339/kelivo) 代码前的最低检查
 
 每次从参考源码或上游版本同步前，至少检查：
@@ -259,7 +340,9 @@
 8. [`gpt_markdown`](dependencies/gpt_markdown) 是否仍使用本地路径依赖，不能回退为 pub.dev 版本约束。
 9. 长会话版本消息修复是否仍保留，包括 [`ChatController.collapseVersions()`](lib/features/home/controllers/chat_controller.dart) 的稳定排序与窗口过滤逻辑、[`ChatController.reloadMessages()`](lib/features/home/controllers/chat_controller.dart) 删除分支后的懒加载开关分流、[`ChatService`](lib/core/services/chat/chat_service.dart) 对新版本消息插回同组附近的写入逻辑，以及 [`repair_chat_archive/`](repair_chat_archive/) 独立旧存档修复工具。
 10. DeepSeek Anthropic 通道与原生搜索修复是否仍保留，包括默认 DeepSeek provider 类型、默认 `https://api.deepseek.com/anthropic`、普通内置搜索支持、禁止 DeepSeek 显示“模型内置搜索(新)”，以及 Anthropic server tool 在 `end_turn` 后不能重复续轮。
-11. [`analysis_options.yaml`](analysis_options.yaml) 是否仍排除 `参考文件/**`。
-12. [`.gitignore`](.gitignore) 是否仍忽略本地安装器、参考源码副本和本地快捷方式。
-13. 如果同步覆盖了 ARB 文件，必须重新补齐四个语言文件并运行本地化生成。
-14. 如果同步覆盖了 Dart 代码，必须重新运行格式化、分析和测试。
+11. 历史消息附件可视化编辑是否仍保留，包括附件标记解析、附件区 UI、删除/添加/替换附件、保存为新版本以及旧格式兼容。
+12. 用户消息图片分离显示设置是否仍保留，包括默认关闭、设置持久化、气泡内/气泡外两种展示模式，以及不修改 `[image:path]` 存档格式。
+13. [`analysis_options.yaml`](analysis_options.yaml) 是否仍排除 `参考文件/**`。
+14. [`.gitignore`](.gitignore) 是否仍忽略本地安装器、参考源码副本和本地快捷方式。
+15. 如果同步覆盖了 ARB 文件，必须重新补齐四个语言文件并运行本地化生成。
+16. 如果同步覆盖了 Dart 代码，必须重新运行格式化、分析和测试。

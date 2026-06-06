@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -8,6 +9,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:Kelivo/core/models/chat_message.dart';
 import 'package:Kelivo/core/providers/settings_provider.dart';
 import 'package:Kelivo/core/providers/tts_provider.dart';
+import 'package:Kelivo/core/providers/user_provider.dart';
+import 'package:Kelivo/features/chat/pages/image_viewer_page.dart';
 import 'package:Kelivo/features/chat/widgets/chat_message_widget.dart';
 import 'package:Kelivo/features/home/services/ask_user_interaction_service.dart';
 import 'package:Kelivo/icons/lucide_adapter.dart';
@@ -34,6 +37,7 @@ Widget _buildHarness({
   return MultiProvider(
     providers: [
       ChangeNotifierProvider<SettingsProvider>.value(value: settings),
+      ChangeNotifierProvider(create: (_) => UserProvider()),
       ChangeNotifierProvider(create: (_) => TtsProvider()),
       ChangeNotifierProvider(create: (_) => ToolApprovalService()),
       ChangeNotifierProvider<AskUserInteractionService>.value(
@@ -427,6 +431,127 @@ void main() {
         findsNothing,
       );
     });
+
+    testWidgets('user image attachments stay inside bubble by default', (
+      tester,
+    ) async {
+      final settings = _createSettings(ChatMessageBackgroundStyle.defaultStyle);
+      final imageFile = File(
+        '${Directory.systemTemp.path}/kelivo-chat-message-widget-image-inline.png',
+      );
+      imageFile.writeAsBytesSync(
+        base64Decode(
+          'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=',
+        ),
+      );
+      addTearDown(() {
+        if (imageFile.existsSync()) imageFile.deleteSync();
+      });
+
+      await tester.pumpWidget(
+        _buildHarness(
+          settings: settings,
+          child: ChatMessageWidget(
+            message: ChatMessage(
+              id: 'user-image-message-inline',
+              role: 'user',
+              content: 'Look at this\n[image:${imageFile.path}]',
+              conversationId: 'conversation-user-image',
+            ),
+            showUserAvatar: false,
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.textContaining('Look at this'), findsOneWidget);
+      expect(find.textContaining('[image:'), findsNothing);
+
+      final attachments = find.byKey(
+        const ValueKey(
+          'user_inline_image_attachments_user-image-message-inline',
+        ),
+      );
+      expect(attachments, findsOneWidget);
+      expect(
+        find.byKey(
+          const ValueKey(
+            'user_separate_image_attachments_user-image-message-inline',
+          ),
+        ),
+        findsNothing,
+      );
+      expect(
+        find.descendant(of: attachments, matching: find.byType(Image)),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets(
+      'user image attachments can render outside text bubble and remain openable',
+      (tester) async {
+        final settings = _createSettings(
+          ChatMessageBackgroundStyle.defaultStyle,
+        );
+        await settings.setSeparateUserMessageImageAttachments(true);
+        final imageFile = File(
+          '${Directory.systemTemp.path}/kelivo-chat-message-widget-image-separated.png',
+        );
+        imageFile.writeAsBytesSync(
+          base64Decode(
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=',
+          ),
+        );
+        addTearDown(() {
+          if (imageFile.existsSync()) imageFile.deleteSync();
+        });
+
+        await tester.pumpWidget(
+          _buildHarness(
+            settings: settings,
+            child: ChatMessageWidget(
+              message: ChatMessage(
+                id: 'user-image-message-separated',
+                role: 'user',
+                content: 'Look at this\n[image:${imageFile.path}]',
+                conversationId: 'conversation-user-image',
+              ),
+              showUserAvatar: false,
+            ),
+          ),
+        );
+        await tester.pump();
+
+        expect(find.textContaining('Look at this'), findsOneWidget);
+        expect(find.textContaining('[image:'), findsNothing);
+
+        final attachments = find.byKey(
+          const ValueKey(
+            'user_separate_image_attachments_user-image-message-separated',
+          ),
+        );
+        expect(attachments, findsOneWidget);
+        expect(
+          find.byKey(
+            const ValueKey(
+              'user_inline_image_attachments_user-image-message-separated',
+            ),
+          ),
+          findsNothing,
+        );
+        expect(
+          find.descendant(of: attachments, matching: find.byType(Image)),
+          findsOneWidget,
+        );
+
+        await tester.tap(
+          find.descendant(of: attachments, matching: find.byType(Image)),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.byType(ImageViewerPage), findsOneWidget);
+      },
+    );
 
     testWidgets('ask user card submits selected answer', (tester) async {
       final settings = _createSettings(ChatMessageBackgroundStyle.defaultStyle);
