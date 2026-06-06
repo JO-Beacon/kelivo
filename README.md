@@ -1,3 +1,21 @@
+<div align="center">
+
+  <img src="assets/app_icon.png" alt="Kelivo Icon" width="100" />
+  <h1>JO-Kelivo</h1>
+
+  <h2>⚠️ 该fork已停止维护并独立化见下方JO-Kelivo ⚠️</h2>
+
+</div>
+
+# [JO-Kelivo](https://github.com/JO-Beacon/JO-Kelivo/releases/latest)
+ 是基于 Kelivo 的非官方改版，按 GNU AGPL-3.0 发布
+
+🔗 [下载最新版本的JO-Kelivo](https://github.com/JO-Beacon/JO-Kelivo/releases/latest)
+
+---
+
+以下为旧内容：
+
 # Kelivo 改版保护提醒
 
 这个 [`README.md`](README.md) 已被改为本项目的改版记录和保护提醒，不再保留 [原版](https://github.com/Chevey339/kelivo) 项目介绍、下载链接、宣传内容或贡献说明。
